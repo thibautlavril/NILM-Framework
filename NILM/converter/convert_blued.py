@@ -74,44 +74,43 @@ def _convert_meter(input_path, hdf_path, metadata_meter):
     if os.path.exists(hdf_filename):
             os.remove(hdf_filename)
     key_measurements = _make_key_measurements(meter)
+    tz = metadata_meter["tz"]
+    start = _find_start(meter, input_path, tz)
     with pd.get_store(hdf_filename) as store:
         for dataset in np.arange(1, number_datasets + 1):
             print(dataset, end=" ")
             sys.stdout.flush()
-            df = _load_dataset(dataset, input_path, metadata_meter)
+            df = _load_dataset(dataset, input_path, metadata_meter, start)
             store.append(str(key_measurements), df, format='table')
             store.flush()
     print()
 
 
-def _load_dataset(dataset, input_path, metadata_meter):
+def _load_dataset(dataset, input_path, metadata_meter, start):
     measurements = metadata_meter["measurements"]
     meter = metadata_meter["meter_id"]
-    tz = metadata_meter["tz"]
     path = _make_input_path(meter, dataset, input_path)
     assert isdir(path)
     index = None
     data = None
-    startDate = None
     sub_files = _make_list_subfiles(dataset)
     for sub_file in sub_files:
-        measures, timestamps, start = _load_subfile(sub_file, dataset,
-                                                    meter, path, tz)
-        if startDate is None:
-            startDate = start
+        measures, timestamps = _load_subfile(sub_file, dataset,
+                                                    meter, path)
         if index is None:
             data = measures
             index = timestamps
         else:
             data = np.concatenate((data, measures), axis=0)
             index = np.concatenate((index, timestamps), axis=0)
-    index = _sec_since_start_to_Datetime(index, startDate, tz)
+    tz = metadata_meter["tz"]
+    index = _sec_since_start_to_Datetime(index, start, tz)
     cols = pd.MultiIndex.from_tuples(measurements, names=['phase', 'type'])
     df = pd.DataFrame(data, columns=cols, index=index, dtype='float32')
     return df
 
 
-def _load_subfile(sub_file, dataset, meter, path, tz):
+def _load_subfile(sub_file, dataset, meter, path):
     input_file = _make_input_file(sub_file, dataset, meter, path)
     assert isfile(input_file)
     mat = scipy.io.loadmat(input_file)
@@ -124,16 +123,12 @@ def _load_subfile(sub_file, dataset, meter, path, tz):
     Pb = mat['data'][0][0][7][0].reshape(len(t), 1)
     measures = np.concatenate((Pa, Qa, Pb, Qb), axis=1)
     timestamps = tt
-    startDate = mat['data'][0][0][9][0][0][0][0][0]
-    startTime = mat['data'][0][0][10][0][0][0][0][0]
-    start = parse(startDate+' '+startTime)
-    start = start.replace(tzinfo=dateutil.tz.gettz(tz))
-    return measures, timestamps, start
+    return measures, timestamps
 
 
 def _sec_since_start_to_Datetime(index, start, tz):
     """
-    Compute a pd.DatetimeIndex in absolute time. The index is
+    Compute the pd.DatetimeIndex in timezone tz. The index is
     the time elapsed since start. start is given in the timezone
     tz.
     """
@@ -175,6 +170,19 @@ def _make_hdf_file(user, hdf_path):
 
 def _make_key_measurements(meter):
     return "/meter{:d}/measurements".format(meter)
+
+
+def _find_start(meter, input_path, tz):
+    name_dir = "_".join(('/location_00{:d}'.format(meter), 'dataset_001/'))
+    start_end_path = "".join((input_path, name_dir))
+    start_end_file = "".join((start_end_path, 'start_end.txt'))
+    with open(start_end_file) as f:
+        l = [line.strip() for line in f]
+    start_date = l[1].split(",")[1]
+    start_time = l[2].split(",")[1]
+    start = parse(start_date+' '+start_time)
+    start = start.replace(tzinfo=dateutil.tz.gettz(tz))
+    return start
 
 
 if __name__ == "__main__":
