@@ -190,3 +190,8 @@ if __name__ == "__main__":
     input_path = '/Volumes/Stockage/DATA/DATA_BLUED/RAW'
     convert_blued(input_path, hdf_path)
     hdf_filename = _make_hdf_file(1, hdf_path)
+    key = _make_key_measurements(1)
+    with pd.get_store(hdf_filename) as store:
+        df = store[key]
+    import matplotlib.pyplot as plt
+    plt.plot(df.index)
