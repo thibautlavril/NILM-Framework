@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-class meter(object):
+class Meter(object):
 
     def __init__(self):
         meter.metadata = dict()

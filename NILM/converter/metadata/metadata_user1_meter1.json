@@ -1,0 +1,3 @@
+{
+    "meter": {"model": "meter_blued", "phases": 2, "sampling_rate": 60}
+}
