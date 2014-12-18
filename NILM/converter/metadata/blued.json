@@ -1,0 +1,1 @@
+{"number_users": 1, "users": {"user1": {"meters": {"meter1": {"tz": "US/Eastern", "measurements": [["A", "P"], ["A", "Q"], ["B", "P"], ["B", "Q"]], "user_id": 1, "meter_id": 1, "number_datasets": 2}}, "user_id": 1, "number_meters": 1}}}

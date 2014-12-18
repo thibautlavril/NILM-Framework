@@ -6,8 +6,16 @@ import scipy.io
 import dateutil.tz
 import datetime
 import os
-from os.path import isdir, isfile
+from os.path import isdir, isfile, join
 from dateutil.parser import parse
+import json
+try:
+    from ..utils import utils_nilmtk
+except ValueError:
+    abspath = os.getcwd()
+    NILMpath = os.path.dirname(os.path.dirname(abspath))
+    sys.path.append(NILMpath)
+    from NILM.utils import utils_nilmtk
 
 
 def convert_blued(input_path, hdf_path):
@@ -25,44 +33,49 @@ def convert_blued(input_path, hdf_path):
     """
     assert isdir(input_path)
     assert isdir(hdf_path)
-    metadata_Blued = {
-        "number_users": 1,
-        "users": {
-            1: {
-                "user_id": 1,
-                "number_meters": 1,
-                "meters": {
-                    1: {
-                        "user_id": 1,
-                        "meter_id": 1,
-                        "number_datasets": 2,
-                        "measurements": [('A', 'P'), ('A', 'Q'),
-                                         ('B', 'P'), ('B', 'Q')],
-                        "tz": "US/Eastern"
-                    }
-                }
-            }
-        }
-    }
-    _convert_data(input_path, hdf_path, metadata_Blued)
+
+    metadata_BLUED = _load_metadata_BLUED()
+    _convert_metadata_blued(hdf_path, metadata_BLUED)
+    _convert_data(input_path, hdf_path, metadata_BLUED)
     print("Convertion finished!")
 
 
-def _convert_data(input_path, hdf_path, metadata_Blued):
-    number_users = metadata_Blued["number_users"]
-    for user in np.arange(1, number_users + 1):
-        metadata_user = metadata_Blued["users"][user]
-        print("Loading user", user, end=" ")
+def _load_metadata_BLUED():
+    metadata_file = join(_give_path_script(), 'metadata', 'blued.json')
+    assert isfile(metadata_file)
+    with open(metadata_file) as fh:
+        metadata_BLUED = json.load(fh)
+    return metadata_BLUED
+
+
+def _give_path_script():
+    try:
+        path = os.path.abspath(__file__)
+        dir_path = os.path.dirname(path)
+        print(dir_path)
+    except NameError:
+        dir_path = os.getcwd()
+    return dir_path
+
+
+def _convert_metadata_blued(hdf_path, metadata_BLUED):
+    with pd.get_store(hdf_filename) as store:
+        store.root._v_attrs.metadata = metadata_BLUED
+
+
+def _convert_data(input_path, hdf_path, metadata_BLUED):
+    for user in metadata_BLUED['users'].keys():
+        metadata_user = metadata_BLUED["users"][user]
+        print("Loading", user, end=" ")
         sys.stdout.flush()
         _convert_user(input_path, hdf_path, metadata_user)
 
 
 def _convert_user(input_path, hdf_path, metadata_user):
-    number_meters = metadata_user["number_meters"]
-    for meter in np.arange(1, number_meters + 1):
-        print("meter", meter, end="... ")
-        sys.stdout.flush()
+    for meter in metadata_user['meters'].keys():
         metadata_meter = metadata_user["meters"][meter]
+        print(meter, end="... ")
+        sys.stdout.flush()
         _convert_meter(input_path, hdf_path, metadata_meter)
 
 
@@ -96,7 +109,7 @@ def _load_dataset(dataset, input_path, metadata_meter, start):
     sub_files = _make_list_subfiles(dataset)
     for sub_file in sub_files:
         measures, timestamps = _load_subfile(sub_file, dataset,
-                                                    meter, path)
+                                             meter, path)
         if index is None:
             data = measures
             index = timestamps
@@ -193,5 +206,6 @@ if __name__ == "__main__":
     key = _make_key_measurements(1)
     with pd.get_store(hdf_filename) as store:
         df = store[key]
+        metadata_dict = store.root._v_attrs.metadata
     import matplotlib.pyplot as plt
     plt.plot(df.index)
