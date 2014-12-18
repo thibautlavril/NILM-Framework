@@ -12,7 +12,11 @@ class Measurements(pd.DataFrame):
 
     def __init__(self, meter):
         super(Measurements, self).__init__()
-        self.meter = meter
+        self._meter = meter
+
+    @property
+    def meter(self):
+        return self._meter
 
     @property
     def key(self):
