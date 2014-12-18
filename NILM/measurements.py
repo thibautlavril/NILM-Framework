@@ -6,7 +6,6 @@ Created on Thu Dec 18 17:36:44 2014
 """
 
 import pandas as pd
-from load import load_meter
 
 
 class Measurements(pd.DataFrame):
@@ -21,16 +20,23 @@ class Measurements(pd.DataFrame):
         key = "/meter{:d}/measurements".format(meter_id)
         return key
 
-    def _load(self, meter, sampling=None):
+    def load_data(self, sampling=None, start=None, end=None, chunk=None):
         hdf_filename = meter.store
+        key = self.key
+        if (start is not None) or (end is not None):
+            raise NotImplementedError
+        if chunk is not None:
+            raise NotImplementedError
         with pd.get_store(hdf_filename) as store:
-            df = store[self.key]
+            df = store[key]
         if sampling is not None:
             raise NotImplementedError
+
         super(Measurements, self).__init__(df)
 
 
 if __name__ == "__main__":
-    meter = load_meter()
+    from tools import create_meter
+    meter = create_meter()
     p = Measurements(meter)
-    p._load(meter, sampling=1)
+    p.load_data()
