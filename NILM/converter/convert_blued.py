@@ -35,7 +35,6 @@ def convert_blued(input_path, hdf_path):
     assert isdir(hdf_path)
 
     metadata_BLUED = _load_metadata_BLUED()
-    _convert_metadata_blued(hdf_path, metadata_BLUED)
     _convert_data(input_path, hdf_path, metadata_BLUED)
     print("Convertion finished!")
 
@@ -52,15 +51,9 @@ def _give_path_script():
     try:
         path = os.path.abspath(__file__)
         dir_path = os.path.dirname(path)
-        print(dir_path)
     except NameError:
         dir_path = os.getcwd()
     return dir_path
-
-
-def _convert_metadata_blued(hdf_path, metadata_BLUED):
-    with pd.get_store(hdf_filename) as store:
-        store.root._v_attrs.metadata = metadata_BLUED
 
 
 def _convert_data(input_path, hdf_path, metadata_BLUED):
@@ -71,7 +64,17 @@ def _convert_data(input_path, hdf_path, metadata_BLUED):
         _convert_user(input_path, hdf_path, metadata_user)
 
 
+def _convert_metadata_user(hdf_filename, metadata_user):
+    with pd.get_store(hdf_filename) as store:
+        store.root._v_attrs.metadata = metadata_user
+
+
 def _convert_user(input_path, hdf_path, metadata_user):
+    user_id = metadata_user['user_id']
+    hdf_filename = _make_hdf_file(user_id, hdf_path)
+    if os.path.exists(hdf_filename):
+        os.remove(hdf_filename)
+    _convert_metadata_user(hdf_filename, metadata_user)
     for meter in metadata_user['meters'].keys():
         metadata_meter = metadata_user["meters"][meter]
         print(meter, end="... ")
@@ -84,8 +87,6 @@ def _convert_meter(input_path, hdf_path, metadata_meter):
     meter = metadata_meter["meter_id"]
     user = metadata_meter["user_id"]
     hdf_filename = _make_hdf_file(user, hdf_path)
-    if os.path.exists(hdf_filename):
-            os.remove(hdf_filename)
     key_measurements = _make_key_measurements(meter)
     tz = metadata_meter["tz"]
     start = _find_start(meter, input_path, tz)
@@ -203,6 +204,7 @@ if __name__ == "__main__":
     input_path = '/Volumes/Stockage/DATA/DATA_BLUED/RAW'
     convert_blued(input_path, hdf_path)
     hdf_filename = _make_hdf_file(1, hdf_path)
+    print(hdf_filename)
     key = _make_key_measurements(1)
     with pd.get_store(hdf_filename) as store:
         df = store[key]

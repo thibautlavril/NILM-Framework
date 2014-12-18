@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import pandas as pd
 
 
 class User(object):
@@ -15,16 +16,15 @@ class User(object):
         self.file = hdf_filename
         self.meters = dict()
         self.metadata = dict()
-        self.meters_metada = dict()
 
-    def load(self, dataset='Blued'):
+    def load(self):
         """"
         Load the metadata of the file to create the meters and the metadata of
         our user
         """
-        # load_metadata(self.file)
-        if dataset == 'Blued':
-            self.metadata = {'user_id': 1, 'number meters': 1}
+        with pd.get_store(self.file) as store:
+            self.metadata = store.root._v_attrs.metadata
+
 
 if __name__ == "__main__":
     hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user1.h5'
