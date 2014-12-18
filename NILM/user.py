@@ -27,8 +27,7 @@ class User(object):
         with pd.get_store(self.store) as store:
             self.metadata = store.root._v_attrs.metadata
         for meter_name in self.metadata['meters'].keys():
-            meter = Meter()
-            meter.load(self, meter_name)
+            meter = Meter(self, meter_name)
             self.meters[meter_name] = meter
 
 if __name__ == "__main__":
