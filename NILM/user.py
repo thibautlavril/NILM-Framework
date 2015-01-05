@@ -30,6 +30,11 @@ class User(object):
             meter = Meter(self, meter_name)
             self.meters[meter_name] = meter
 
+    def __getitem__(self, key):
+        key_dict = self.meters.keys()[key]
+        return self.meters[key_dict]
+
+
 if __name__ == "__main__":
     hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user1.h5'
     user1 = User()

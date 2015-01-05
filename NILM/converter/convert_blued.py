@@ -22,7 +22,7 @@ def convert_blued(input_path, hdf_path):
     """
     Convert the matlab files of Blued into a pd.DataFrame. The dataframe is
     stored in a HDFS file (one file by user). IMPORTANT: The matlab files needs
-    to be unzipped before converted and stored in there originally folder.
+    to be unzipped before converted and stored in their originally folder.
 
     Parameters
     ----------
