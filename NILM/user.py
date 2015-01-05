@@ -12,18 +12,17 @@ class User(object):
     attributes: store, meters, metadata.
     """
 
-    def __init__(self):
-        self.store = str()
+    def __init__(self, hdf_filename):
+        assert os.path.isfile(hdf_filename)
+        self.store = hdf_filename
         self.meters = dict()
         self.metadata = dict()
 
-    def load(self, hdf_filename):
+    def load(self):
         """"
         Load the metadata of the file to create the meters and the metadata of
         our user
-        """
-        assert os.path.isfile(hdf_filename)
-        self.store = hdf_filename
+        """ 
         with pd.get_store(self.store) as store:
             self.metadata = store.root._v_attrs.metadata
         for meter_name in self.metadata['meters'].keys():
@@ -37,6 +36,5 @@ class User(object):
 
 if __name__ == "__main__":
     hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user1.h5'
-    user1 = User()
-    user1.load(hdf_filename)
-    print user1.metadata['meters'].keys()
+    user1 = User(hdf_filename)
+    user1.load()

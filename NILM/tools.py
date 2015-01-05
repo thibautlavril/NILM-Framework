@@ -10,8 +10,8 @@ from user import User
 
 def create_user(hdf_filename=
               '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user1.h5'):
-    user = User()
-    user.load(hdf_filename)
+    user = User(hdf_filename)
+    user.load()
     return user
 
 
