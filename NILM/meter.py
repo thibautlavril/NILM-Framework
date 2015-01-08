@@ -33,10 +33,6 @@ class Meter(object):
         g = dict_repr.__repr__()
         return g
 
-    def __getattr__(self, name):
-        print("No attribute {}, try to load data, detect events, etc first"
-              .format(name))
-        raise AttributeError
 
     def load_measurements(self, sampling_period=1):
         """
@@ -47,9 +43,9 @@ class Meter(object):
         self.state['data_loaded'] = True
         self.state['sampling'] = '{:d}s'.format(sampling_period)
 
-    def detect_events(self, detection_type='steady_states', *args, **kwargs):
+    def detect_events(self, detection_type='steady_states', **kwargs):
         assert self.state["data_loaded"]
-        self.events.detection(detection_type, *args, **kwargs)
+        self.events.detection(detection_type, **kwargs)
         self.state['event_detected'] = True
         self.state['detection_type'] = detection_type
 
@@ -60,4 +56,4 @@ if __name__ == '__main__':
     meter1_name = user1.metadata['meters'].keys()[0]
     meter1 = Meter(user1, meter1_name)
     meter1.load_measurements(sampling_period=10)
-    meter1.detect_events(detection_type='simple_edge')
+    meter1.detect_events(detection_type='simple_edge', edge_threshold=100)

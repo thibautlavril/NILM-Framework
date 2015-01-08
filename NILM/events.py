@@ -14,17 +14,17 @@ class Events(pd.DataFrame):
     def meter(self):
         return self._meter
 
-    def detection(self, detection_type, *kargs):
+    def detection(self, detection_type, **kwargs):
         assert (detection_type in Events.detection_types)
         phases = self.meter.measurements.columns.levels[0]
         df = pd.DataFrame()
         for phase in phases:
             if detection_type == 'simple_edge':
                 dff = detection.simple_edge(self.meter.measurements[phase],
-                                            *kargs)
+                                            **kwargs)
             elif detection_type == 'steady_states':
                 dff = detection.steady_states(self.meter.measurements[phase],
-                                              *kargs)
+                                              **kwargs)
             else:
                 raise NotImplementedError
 
@@ -38,4 +38,4 @@ if __name__ == '__main__':
     meter1 = create_meter()
     meter1.load_measurements(sampling_period=10)
     events = Events(meter1)
-    events.detection('simple_edge')
+    events.detection('simple_edge', edge_threshold=100)
