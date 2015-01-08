@@ -18,16 +18,13 @@ class Events(pd.DataFrame):
         assert (detection_type in Events.detection_types)
         phases = self.meter.measurements.columns.levels[0]
         df = pd.DataFrame()
+        detectionDict = {
+            "simple_edge": detection.simple_edge,
+            "steady_states": detection.steady_states
+        }
         for phase in phases:
-            if detection_type == 'simple_edge':
-                dff = detection.simple_edge(self.meter.measurements[phase],
-                                            **kwargs)
-            elif detection_type == 'steady_states':
-                dff = detection.steady_states(self.meter.measurements[phase],
-                                              **kwargs)
-            else:
-                raise NotImplementedError
-
+            dff = detectionDict[detection_type](self.meter.measurements[phase],
+                                                **kwargs)
             dff['phase'] = phase
             df = df.append(dff)
 

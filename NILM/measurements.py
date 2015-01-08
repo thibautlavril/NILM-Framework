@@ -7,10 +7,8 @@ Created on Thu Dec 18 17:36:44 2014
 import os
 import sys
 import pandas as pd
-try:
-    from ..utils import sampling
-except ValueError:
-    from utils import sampling
+from utils import sampling
+
 
 
 class Measurements(pd.DataFrame):
