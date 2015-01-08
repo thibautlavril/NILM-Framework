@@ -51,7 +51,7 @@ class Meter(object):
 
 
 if __name__ == '__main__':
-    from tools import create_user
+    from utils.tools import create_user
     user1 = create_user()
     meter1_name = user1.metadata['meters'].keys()[0]
     meter1 = Meter(user1, meter1_name)

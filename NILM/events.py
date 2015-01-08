@@ -31,7 +31,7 @@ class Events(pd.DataFrame):
         super(Events, self).__init__(df)
 
 if __name__ == '__main__':
-    from tools import create_meter
+    from utils.tools import create_meter
     meter1 = create_meter()
     meter1.load_measurements(sampling_period=10)
     events = Events(meter1)

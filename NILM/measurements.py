@@ -44,7 +44,7 @@ class Measurements(pd.DataFrame):
 
 
 if __name__ == "__main__":
-    from tools import create_meter
+    from utils.tools import create_meter
     meter1 = create_meter()
     p = Measurements(meter1)
     p.load_data(sampling_period=1)
