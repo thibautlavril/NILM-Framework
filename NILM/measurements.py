@@ -10,9 +10,7 @@ import pandas as pd
 try:
     from ..utils import sampling
 except ValueError:
-    NILMpath = os.getcwd()
-    sys.path.append(NILMpath)
-    from NILM.utils import sampling
+    from utils import sampling
 
 
 class Measurements(pd.DataFrame):

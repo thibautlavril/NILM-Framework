@@ -27,10 +27,16 @@ class Meter(object):
         return self._user
 
     def __repr__(self):
-        s = "(meter_id: {:d}, user_id: {:d}) \n"\
-            .format(self.metadata['meter_id'], self.metadata['user_id'])
-        g = self.state.__repr__()
-        return s+g
+        dict_repr = dict()
+        dict_repr["meter_id"] = self.metadata['meter_id']
+        dict_repr["disaggregation_state"] = self.state
+        g = dict_repr.__repr__()
+        return g
+
+    def __getattr__(self, name):
+        print("No attribute {}, try to load data, detect events, etc first"
+              .format(name))
+        raise AttributeError
 
     def load_measurements(self, sampling_period=1):
         """
@@ -41,9 +47,9 @@ class Meter(object):
         self.state['data_loaded'] = True
         self.state['sampling'] = '{:d}s'.format(sampling_period)
 
-    def detect_events(self, detection_type='steady_states', *kwargs):
+    def detect_events(self, detection_type='steady_states', *args, **kwargs):
         assert self.state["data_loaded"]
-        self.events.detection(detection_type, *kwargs)
+        self.events.detection(detection_type, *args, **kwargs)
         self.state['event_detected'] = True
         self.state['detection_type'] = detection_type
 
