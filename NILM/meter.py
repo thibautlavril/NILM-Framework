@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pandas as pd
 from measurements import Measurements
 from events import Events
 
@@ -15,6 +16,16 @@ class Meter(object):
         self.state['event_detected'] = False
         self.measurements = Measurements(self)
         self.events = Events(self)
+    
+    @property
+    def features(self):
+        columns = self.metadata['measurements']
+        features = pd.MultiIndex.from_tuples(columns)
+        return features
+    
+    @property
+    def phases(self):
+        return self.features.levels[0]
 
     @property
     def store(self):

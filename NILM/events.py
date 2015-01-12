@@ -17,19 +17,20 @@ class Events(pd.DataFrame):
     def meter(self):
         return self._meter
 
-    def detection(self, detection_type, phases_separation=False, **kwargs):
+    def detection(self, detection_type, separate_phases=True, **kwargs):
         assert (detection_type in Events.detection_types)
         phases = self.meter.measurements.columns.levels[0]
         detection_func = Events.detection_types[detection_type]
         df = pd.DataFrame()
 
-        if phases_separation:
+        if separate_phases:
             for phase in phases:
                 dff = detection_func(self.meter.measurements[phase], **kwargs)
                 dff['phase'] = phase
                 df = df.append(dff)
         else:
             df = detection_func(self.meter.measurements, **kwargs)
+
 
         super(Events, self).__init__(df)
 
