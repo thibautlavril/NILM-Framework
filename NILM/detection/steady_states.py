@@ -50,8 +50,8 @@ def steady_states(dataframe, state_threshold=15,
     time = dataframe.iloc[0].name  # first state starts at beginning
 
     # Iterate over the rows performing algorithm
-    print ("Finding Edges, please wait ...", end="\n")
-    sys.stdout.flush()
+    # print ("Finding Edges, please wait ...", end="\n")
+    # sys.stdout.flush()
 
     for row in dataframe.itertuples():
 
@@ -145,10 +145,10 @@ def steady_states(dataframe, state_threshold=15,
 
 
 
-    print("Edge detection complete.")
+    # print("Edge detection complete.")
 
-    print("Creating transition frame ...")
-    sys.stdout.flush()
+    # print("Creating transition frame ...")
+    # sys.stdout.flush()
     
     columns = dataframe.columns
 
@@ -159,12 +159,12 @@ def steady_states(dataframe, state_threshold=15,
     else:
         transitions = pd.DataFrame(data=transitions, index=index_transitions,
                                    columns=columns)
-        print("Transition frame created.")
+        # print("Transition frame created.")
 
-        print("Creating states frame ...")
-        sys.stdout.flush()
+        # print("Creating states frame ...")
+        # sys.stdout.flush()
         steadyStates = pd.DataFrame(data=steadyStates, index=index_steadystates,
                                     columns=columns)
-        print("States frame created.")
-        print("Finished.")
+        # print("States frame created.")
+        # print("Finished.")
         return transitions
