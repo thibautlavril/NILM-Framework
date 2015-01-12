@@ -9,9 +9,9 @@ import pandas as pd
 import numpy as np
 
 
-def simple_edge(meter, edge_threshold=30):
+def simple_edge(meter, edge_threshold=70):
     # PART I: t to delta t
-    columns = ['delta P', 'delta Q']
+    columns = meter.columns
 
     meter_t1 = meter.values[1:]
     meter_t0 = meter.values[:-1]
