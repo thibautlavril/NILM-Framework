@@ -5,10 +5,12 @@ import sys
 
 
 def steady_states(dataframe, state_threshold=15,
-                  edge_threshold=30):
-    """Taken from nilmtk. Quote while using
-
+                  edge_threshold=70):
+    """
     Finds steady states given a datafram of power
+    
+    Taken from nilmtk. Quote while using
+
 
     Parameters
     ----------
@@ -59,7 +61,7 @@ def steady_states(dataframe, state_threshold=15,
 
         # Step 2: this does the threshold test and then we sum the boolean
         # array.
-        thisMeasurement = row[1:3]
+        thisMeasurement = row[1:]
         # logging.debug('The current measurement is: %s' % (thisMeasurement,))
         # logging.debug('The previous measurement is: %s' %
         # (previousMeasurement,))
@@ -147,25 +149,22 @@ def steady_states(dataframe, state_threshold=15,
 
     print("Creating transition frame ...")
     sys.stdout.flush()
+    
+    columns = dataframe.columns
 
-    cols_transition = {1: ['delta P'],
-                       2: ['delta P', 'delta Q']}
-
-    cols_steady = {1: ['active average'],
-                   2: ['active average', 'reactive average']}
 
     if len(index_transitions)==0:
         # No events
         return pd.DataFrame(), pd.DataFrame()
     else:
         transitions = pd.DataFrame(data=transitions, index=index_transitions,
-                                   columns=cols_transition[num_measurements])
+                                   columns=columns)
         print("Transition frame created.")
 
         print("Creating states frame ...")
         sys.stdout.flush()
         steadyStates = pd.DataFrame(data=steadyStates, index=index_steadystates,
-                                    columns=cols_steady[num_measurements])
+                                    columns=columns)
         print("States frame created.")
         print("Finished.")
         return transitions

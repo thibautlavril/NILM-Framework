@@ -18,7 +18,7 @@ detection_parameters = {
         "edge_threshold": 100
     },
     "steady_states": {
-        "edge_threshold": 100,
+        "edge_threshold": 70,
         "state_threshold": 15
     }
 }
