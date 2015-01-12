@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import NILM as nl
+import NILM as nilm
 
 hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user1.h5'
-user1 = nl.User(hdf_filename)
+user1 = nilm.User(hdf_filename)
 user1.load()
 
 meter1 = user1[0]

@@ -3,12 +3,11 @@ import detection
 
 
 class Events(pd.DataFrame):
-    
+
     detection_types = {
             "simple_edge": detection.simple_edge,
             "steady_states": detection.steady_states
         }
-
 
     def __init__(self, meter):
         super(Events, self).__init__()
@@ -23,14 +22,13 @@ class Events(pd.DataFrame):
         phases = self.meter.measurements.columns.levels[0]
         detection_func = Events.detection_types[detection_type]
         df = pd.DataFrame()
-        
+
         if phases_separation:
             for phase in phases:
                 dff = detection_func(self.meter.measurements[phase], **kwargs)
                 dff['phase'] = phase
                 df = df.append(dff)
         else:
-            
             df = detection_func(self.meter.measurements, **kwargs)
 
         super(Events, self).__init__(df)

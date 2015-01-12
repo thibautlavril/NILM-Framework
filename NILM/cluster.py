@@ -2,18 +2,20 @@ import pandas as pd
 import clustering
 
 
-class Clusters(pd.DataFrame):
+class Clusters(object):
 
-    clustering_types = ['dbscan', 'mean_shift']
-
-    clusteringDict = {
-        "dbscan": clustering.dbscan,
-        "mean_shift": clustering.mean_shift_clustering
-        }
-
-    def __init__(self, meter):
-        super(Clusters, self).__init__()
+    def __init__(self, meter, clustering_name, **kwargs):
         self._meter = meter
+        assert clustering_name in clustering.clusteringDict
+        self._clustering_name = clustering_name
+        self._clustering_func = clustering.clusteringDict[clustering_name]
+        parameters = clustering.parametersDict[clustering_name]
+        for k, v in kwargs.iteritems():
+            if k in parameters.keys():
+                parameters[k] = v
+        self._parameters = parameters
+        
+        
 
     @property
     def meter(self):
@@ -34,6 +36,5 @@ class Clusters(pd.DataFrame):
 if __name__ == '__main__':
     from utils.tools import create_meter
     meter1 = create_meter()
-    meter1.load_events(sampling_period=10)
-    Clusters = Clusters(meter1)
-    Clusters.clustering('dbscan', edge_threshold=100)
+    meter1.load_measurements(sampling_period=10)
+    clusters = Clusters(meter1, 'DBSCAN', eps=2)
