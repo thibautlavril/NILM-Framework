@@ -2,6 +2,7 @@
 import pandas as pd
 from measurements import Measurements
 from events import Events
+from clusters import Clusters
 
 
 class Meter(object):
@@ -59,6 +60,17 @@ class Meter(object):
         self.events.detection(detection_type, **kwargs)
         self.state['event_detected'] = True
         self.state['detection_type'] = detection_type
+    
+    def cluster_events(self, clustering_type='DBSCAN', phases_separation=True,
+                       features=None, **clustering_parameters):
+        assert self.state['event_detected']
+        self.clusters = Clusters(self, 'DBSCAN',
+                                 phases_separation=True, features=None,
+                                 **clustering_parameters)
+
+        self.clusters.clustering()
+        self.state['clustering'] = True
+    
 
 
 if __name__ == '__main__':
@@ -66,5 +78,7 @@ if __name__ == '__main__':
     user1 = create_user()
     meter1_name = user1.metadata['meters'].keys()[0]
     meter1 = Meter(user1, meter1_name)
-    meter1.load_measurements(sampling_period=10)
-    meter1.detect_events(detection_type='simple_edge', edge_threshold=100)
+    meter1.load_measurements(sampling_period=1)
+    meter1.detect_events(detection_type='steady_states', edge_threshold=100)
+    meter1.cluster_events(clustering_type='DBSCAN', phases_separation=True,
+                       features=None, eps=35)
