@@ -50,7 +50,11 @@ class Clusters(pd.DataFrame):
                 labels = np.append(labels, model.labels_)
         labels = np.array(labels)
         self._meter.events['cluster'] = labels
-        super(Clusters, self).__init__(clusters._meter.events.groupby(['phase', 'cluster']).mean())
+        df = clusters._meter.events.groupby(['phase', 'cluster']).mean()
+        columns = df.columns
+        serie = clusters._meter.events.groupby(['phase', 'cluster']).count()
+        df['count'] = serie[columns[0]].values
+        super(Clusters, self).__init__(df)
                 
         
     
