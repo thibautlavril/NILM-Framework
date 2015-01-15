@@ -12,6 +12,9 @@ class BuildApplianceModels(object):
     def __init__(self, kind, parameters):
         self.kind = kind
         self.parameters = parameters
+    
+    def construct_distance_matrix(self, df, distance='powers'):
+        
 
 class ApplianceModels(pd.DataFrame):
 

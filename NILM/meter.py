@@ -17,6 +17,7 @@ class Meter(object):
         self.state['event_detected'] = False
         self.measurements = Measurements(self)
         self.events = Events(self)
+        self.phase_by_phase = True
     
     @property
     def features(self):
@@ -65,8 +66,8 @@ class Meter(object):
                        features=None, **clustering_parameters):
         assert self.state['event_detected']
         self.clusters = Clusters(self, 'DBSCAN',
-                                 phases_separation=True, features=None,
-                                 **clustering_parameters)
+                                 phases_separation=self.phase_by_phase, 
+                                 features=None, **clustering_parameters)
 
         self.clusters.clustering()
         self.state['clustering'] = True
