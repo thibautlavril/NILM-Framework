@@ -69,7 +69,7 @@ class Meter(object):
     def cluster_events(self, clustering_type='DBSCAN', phases_separation=True,
                        features=None, **clustering_parameters):
         assert self.state['event_detected']
-        self.clusters = Clusters(self, 'DBSCAN',
+        self.clusters = Clusters(self, clustering_type,
                                  phases_separation=self.phase_by_phase, 
                                  features=None, **clustering_parameters)
 
