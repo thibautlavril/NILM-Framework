@@ -23,6 +23,10 @@ class Clusters(pd.DataFrame):
             self._features = self._meter.features.levels[1]
         else:
             self._features = features
+
+    @property
+    def phase_by_phase(self):
+        return self._phases_separation
        
     def clustering(self):
         if not self._phases_separation:
