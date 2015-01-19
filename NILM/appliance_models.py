@@ -120,6 +120,7 @@ class ApplianceModels(pd.DataFrame):
 
         #  Initialization
         appliances = np.array([])
+        n_appliances = 0
 
         for phase in phases:
             #  Select the clusters of this phase
@@ -133,21 +134,30 @@ class ApplianceModels(pd.DataFrame):
             model = self.building_model.model
             parameters = self.building_model.parameters
             a = model(X, **parameters)
+            a = np.where(a == -1, -1, a + n_appliances)
+            n_appliances = max(a) + 1
             appliances = np.append(appliances, a)
 
         # Add appliances label to meter.clusters
         appliances = np.array(appliances)
-        meter.clusters['appliances'] = appliances
+        meter.clusters['appliance'] = appliances
 
         # Construct the pd.DataFrame Appliances Model
         df = meter.clusters.reset_index()
-        df = df.set_index(['phase', 'appliances', 'cluster'])
-        df = df.sortlevel([0, 1])
+        df = df.sort(columns=['phase', 'appliance', 'cluster'])
+        transition_on = np.where((df['P'] > 0) & (df['appliance'] != -1),
+                                    1, 0)
+        transitions = np.where((df['P'] < 0) & (df['appliance'] != -1),
+                                    -1, transition_on)
+        df['transition'] = transitions
+                                    
+        df = df.set_index('appliance')
         super(ApplianceModels, self).__init__(df)
 
 
 if __name__ == '__main__':
-    appliance_models = ApplianceModels('dbscan')
+    appliance_models = ApplianceModels('simple')
     appliance_models.build_appliance_models(meter1)
+    meter1.appliance_models = appliance_models
 
         

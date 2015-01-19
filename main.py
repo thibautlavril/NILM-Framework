@@ -28,3 +28,5 @@ detection_parameter = detection_parameters[detection_type]
 
 
 meter1.detect_events(detection_type, **detection_parameter)
+meter1.cluster_events(clustering_type='DBSCAN', phases_separation=True,
+                       features=None, eps=35)
