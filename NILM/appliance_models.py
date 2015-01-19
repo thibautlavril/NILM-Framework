@@ -10,9 +10,10 @@ import numpy as np
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.cluster import AffinityPropagation, DBSCAN
 
+
 def euclidian_cluster(x1, x2):
     assert x1.shape == x2.shape
-    return  np.linalg.norm(x1 + x2)
+    return np.linalg.norm(x1 + x2)
 
 
 def simple_association(X, distance_threshold, metric):
@@ -56,7 +57,6 @@ def dbscan_association(X, metric=euclidian_cluster, **dbscan_parameters):
 
 def affinity_propagation_association(X, **dbscan_parameters):
     pass
-    
 
 
 associationsDict = {
@@ -74,7 +74,7 @@ associationsDict = {
             'min_samples': 1,
             'metric': euclidian_cluster
             }
-        }   
+        }
     }
 
 
@@ -127,12 +127,13 @@ class ApplianceModels(pd.DataFrame):
             # Select the powers
             X = df[powers].values
 
-            # Associate the clusters, the model use and the parameters
+            # Associate the clusters to make appliances.
+            # The model and the parameters used
             # are stored in the building_model object
             model = self.building_model.model
             parameters = self.building_model.parameters
-            appl = model(X, **parameters)
-            appliances = np.append(appliances, appl)
+            a = model(X, **parameters)
+            appliances = np.append(appliances, a)
 
         # Add appliances label to meter.clusters
         appliances = np.array(appliances)
