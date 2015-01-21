@@ -187,7 +187,7 @@ def _make_list_subfiles_blued(dataset):
 
 def _make_hdf_file(user, hdf_path):
     filename = "{:s}.h5".format(user)
-    hdf_filename = "".join((hdf_path, filename))
+    hdf_filename = "/".join((hdf_path, filename))
     return hdf_filename
 
 
@@ -209,7 +209,7 @@ def _find_start(meter, input_path, tz):
 
 
 if __name__ == "__main__":
-    hdf_path = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/'
+    hdf_path = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED'
     input_path = '/Volumes/Stockage/DATA/DATA_BLUED/RAW'
     blued_to_user(input_path, hdf_path)
     hdf_filename = _make_hdf_file("user_blued", hdf_path)

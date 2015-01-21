@@ -7,10 +7,13 @@ Created on Wed Jan 21 11:13:13 2015
 
 import pandas as pd
 import pprint
-
+import os
 
 
 def dataframe_to_meter(df, hdf_filename):
+
+    if os.path.exists(hdf_filename):
+        os.remove(hdf_filename)
 
     try:
         assert isinstance(df.index, pd.DatetimeIndex)
@@ -26,10 +29,10 @@ def dataframe_to_meter(df, hdf_filename):
                              two levels: phases and power_types')
 
     phases = list(df.columns.levels[0])
-    print 'Check: the phases are:', phases
+    print 'Convertion: the phases are:', phases
 
     power_types = list(df.columns.levels[1])
-    print 'Check: the power types measured are:', power_types
+    print 'Convertion: the power types measured are:', power_types
 
     for phase in phases:
         try:
@@ -37,21 +40,23 @@ def dataframe_to_meter(df, hdf_filename):
         except AssertionError:
             raise AssertionError('Convertion: the phase {:s} of does not have \
                                   all the power types'.format(phase))
-    
+
     measurements = {}
     measurements['phases'] = phases
     measurements['power_types'] = power_types
- 
+
     timestamps = {}
     timestamps['tz'] = str(df.index.tz)
     timestamps['start'] = str(pd.Timestamp(df.index[0]))
     timestamps['end'] = str(pd.Timestamp(df.index[-1]))
-    timestamps['duration_hours'] = str((pd.Timestamp(df.index[-1]) - \
-                           pd.Timestamp(df.index[0])).seconds//3600.)
+    timestamps['duration_hours'] = str((pd.Timestamp(df.index[-1]) -
+                                        pd.Timestamp(df.index[0]))
+                                       .seconds//3600.)
 
     metadata = {}
     metadata['measurements'] = measurements
     metadata['timestamps'] = timestamps
+    print "Convertion: meatadata stored is:"
     pprint.PrettyPrinter(0).pprint(metadata)
 
     with pd.get_store(hdf_filename) as store:
@@ -62,7 +67,4 @@ def dataframe_to_meter(df, hdf_filename):
 if __name__ == '__main__':
     hdf_filename = 'meter_blued.h5'
     dataframe_to_meter(df, hdf_filename)
-    
-    
-    
-    
+

@@ -2,6 +2,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+
+import converter
+
 from measurements import Measurements
 from events import Events
 from clusters import Clusters
@@ -49,30 +52,42 @@ class Meter(object):
         assert os.path.isfile(hdf_filename)
         with pd.get_store(hdf_filename) as store:
             metadata = store.root._v_attrs.metadata
-        
+
         meter_ID = hdf_filename.split('/')[-1]
-        phases = list(metadata['phases'])
-        power_types = list(metadata['power_types'])
+        phases = list(metadata['measurements']['phases'])
+        power_types = list(metadata['measurements']['power_types'])
 
         key = 'measurements'
         store = Store(hdf_filename, key)
         meter = Meter(metadata, phases, power_types, store, meter_ID)
         return meter
 
+    @staticmethod
+    def from_dataframe(df, hdf_filename):
+        converter.dataframe_to_meter(df, hdf_filename)
+        return Meter.from_meter_hdf(hdf_filename)
+
     def __repr__(self):
         return str(self.ID)
 
-    def load_measurements(self, sampling_period=1):
+    def load_measurements(self, sampling_period):
         """
         Load the measurments in a pd.DataFrame. The elapsed time between each
         sample is given by sampling_period in seconds
         """
-        self.measurements.load_data(sampling_period)
-        self.state['data_loaded'] = True
-        self.state['sampling'] = '{:d}s'.format(sampling_period)
+        measurements = Measurements(sampling_period)
+        measurements.load_data(self)
+        self.measurements_ = measurements
+        print "Meter: measurements loaded!"
+
+    @property
+    def measurements(self):
+        try:
+            return self.measurements_
+        except AttributeError:
+            return AttributeError('Meter: load measurements before!')
 
     def detect_events(self, detection_type='steady_states', **kwargs):
-        assert self.state["data_loaded"]
         self.events.detection(detection_type, **kwargs)
         self.state['event_detected'] = True
         self.state['detection_type'] = detection_type
@@ -106,21 +121,14 @@ class Meter(object):
         self.appliance_behaviors.tracking(self)
         
 
-if __name__ == '__main_s_':
-    from utils.tools import create_user
-    user1 = create_user()
-    meter1_name = user1.metadata['meters'].keys()[0]
-    meter1 = Meter(user1, meter1_name)
-    meter1.load_measurements(sampling_period=1)
-    meter1.detect_events(detection_type='steady_states', edge_threshold=100)
-    meter1.cluster_events(clustering_type='DBSCAN', phases_separation=True,
-                          features=None, eps=35)
-    meter1.model_appliances(modeling_type='simple')
-    meter1.track_behaviors()
-    for phase, appliance in meter1.appliance_behaviors.columns:
-        print appliance
-        meter1.measurements[phase][meter1.power_types[0]].plot()
-        meter1.appliance_behaviors[phase][appliance].plot(color='r')
-        plt.show()
-        
+if __name__ == '__main__':
+    from user import User
+    hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user_blued.h5'
+    user = User(hdf_filename)
+    meter = user.meters[0]
+    
+    meter.load_measurements(sampling_period=10)
+    
+
+            
         

@@ -4,47 +4,26 @@ Created on Thu Dec 18 17:36:44 2014
 
 @author: thibaut
 """
-import os
-import sys
 import pandas as pd
-from utils import sampling
-
+import preprocessing
 
 
 class Measurements(pd.DataFrame):
 
-    def __init__(self, meter):
+    def __init__(self, sampling_period):
         super(Measurements, self).__init__()
-        self._meter = meter
+        self.sampling_period = float(sampling_period)
 
-    @property
-    def meter(self):
-        return self._meter
+    def load_data(self, meter):
+        sampling_period = self.sampling_period
 
-    @property
-    def key(self):
-        meter_id = self.meter.metadata['meter_id']
-        key = "/meter{:d}/measurements".format(meter_id)
-        return key
+        hdf_filename = meter.store.filename
+        key = meter.store.key
 
-    def load_data(self, sampling_period=None, start=None,
-                  end=None, chunk=None):
-        hdf_filename = self.meter.store
-        key = self.key
-        if (start is not None) or (end is not None):
-            raise NotImplementedError
-        if chunk is not None:
-            raise NotImplementedError
         with pd.get_store(hdf_filename) as store:
             df = store[key]
+
         if sampling_period is not None:
-            float(sampling_period)
-            df = sampling.resample(df, sampling_period)
+            df = preprocessing.resample(df, sampling_period)
+
         super(Measurements, self).__init__(df)
-
-
-if __name__ == "__main__":
-    from utils.tools import create_meter
-    meter1 = create_meter()
-    p = Measurements(meter1)
-    p.load_data(sampling_period=1)
