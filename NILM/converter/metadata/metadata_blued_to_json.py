@@ -4,7 +4,7 @@ metadata_Blued = {
     "number_users": 1,
     "users": {
         'user1': {
-            "user_id": 1,
+            "user_id": 'blued',
             "number_meters": 1,
             "meters": {
                 'meter1': {

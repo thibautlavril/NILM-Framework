@@ -18,7 +18,7 @@ except ValueError:
     from NILM.utils import utils_nilmtk
 
 
-def convert_blued(input_path, hdf_path):
+def convert_blued_to_user(input_path, hdf_path):
     """
     Convert the matlab files of Blued into a pd.DataFrame. The dataframe is
     stored in a HDFS file (one file by user). IMPORTANT: The matlab files needs
