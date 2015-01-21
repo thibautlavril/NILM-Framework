@@ -87,10 +87,18 @@ class Meter(object):
         except AttributeError:
             return AttributeError('Meter: load measurements before!')
 
-    def detect_events(self, detection_type='steady_states', **kwargs):
-        self.events.detection(detection_type, **kwargs)
-        self.state['event_detected'] = True
-        self.state['detection_type'] = detection_type
+    def detect_events(self, detection_type, **detection_parameters):
+        events = Events(detection_type, **detection_parameters)
+        events.detection(self)
+        self.events_ = events
+        print "Meter: events detected!"
+
+    @property
+    def events(self):
+        try:
+            return self.events_
+        except AttributeError:
+            return AttributeError('Meter: detect events before!')
 
     def cluster_events(self, clustering_type='DBSCAN', phases_separation=True,
                        features=None, **clustering_parameters):
@@ -128,6 +136,8 @@ if __name__ == '__main__':
     meter = user.meters[0]
     
     meter.load_measurements(sampling_period=10)
+    meter.detect_events(detection_type='steady_states')
+
     
 
             

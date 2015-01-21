@@ -20,4 +20,6 @@ def simple_edge(meter, edge_threshold=70):
     events = pd.DataFrame(meter_dt, columns=columns, index=index_dt)
     # PART II: Application of edge_threshold
     events = events[np.abs(events[columns[0]]) > edge_threshold]
+    events.index.name = meter.index.name
     return events
+    

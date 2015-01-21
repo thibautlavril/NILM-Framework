@@ -159,6 +159,7 @@ def steady_states(dataframe, state_threshold=15,
     else:
         transitions = pd.DataFrame(data=transitions, index=index_transitions,
                                    columns=columns)
+        transitions.index.name = dataframe.index.name
         # print("Transition frame created.")
 
         # print("Creating states frame ...")

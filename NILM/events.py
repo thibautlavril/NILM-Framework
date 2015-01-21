@@ -5,38 +5,42 @@ import detection
 class Events(pd.DataFrame):
 
     detection_types = {
-            "simple_edge": detection.simple_edge,
-            "steady_states": detection.steady_states
-        }
+        "simple_edge": {
+            "model": detection.simple_edge,
+            "parameters": {
+                "edge_threshold": 70}},
+        "steady_states": {
+            "model": detection.steady_states,
+            "parameters": {
+                "edge_threshold": 70,
+                "state_threshold": 15}}}
 
-    def __init__(self, meter):
+    def __init__(self, detection_type, **detection_parameters):
         super(Events, self).__init__()
-        self._meter = meter
+        # Check name of method for association is valid
+        assert detection_type in Events.detection_types
 
-    @property
-    def meter(self):
-        return self._meter
+        # define model and default parameters from the dict
+        detection_dict = Events.detection_types[detection_type]
+        model = detection_dict['model']
+        parameters = detection_dict['parameters']
+        # Add the parameters from **parameters in the dict
+        for k, v in detection_parameters.iteritems():
+            parameters[k] = v
 
-    def detection(self, detection_type, separate_phases=True, **kwargs):
-        assert (detection_type in Events.detection_types)
-        phases = self.meter.measurements.columns.levels[0]
-        detection_func = Events.detection_types[detection_type]
+        self.detection_type = detection_type
+        self.detection_model = model
+        self.detection_parameters = parameters
+
+    def detection(self, meter):
+        phases = meter.phases
+        model = self.detection_model
+        parameters = self.detection_parameters
         df = pd.DataFrame()
-
-        if separate_phases:
-            for phase in phases:
-                dff = detection_func(self.meter.measurements[phase], **kwargs)
-                dff['phase'] = phase
-                df = df.append(dff)
-        else:
-            df = detection_func(self.meter.measurements, **kwargs)
-
-
+        for phase in phases:
+            measurements = meter.measurements[phase]
+            dff = model(measurements, **parameters)
+            dff['phase'] = phase
+            df = df.append(dff)
+        df = df.reset_index()
         super(Events, self).__init__(df)
-
-if __name__ == '__main__':
-    from utils.tools import create_meter
-    meter1 = create_meter()
-    meter1.load_measurements(sampling_period=10)
-    events = Events(meter1)
-    events.detection('simple_edge', edge_threshold=100)

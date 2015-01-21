@@ -3,9 +3,10 @@ import numpy as np
 import clustering
 import matplotlib.pyplot as plt
 
+
 class Clusters(pd.DataFrame):
 
-    def __init__(self, meter, clustering_name, 
+    def __init__(self, meter, clustering_name,
                  phases_separation=True, features=None, **kwargs):
         super(Clusters, self).__init__()
         self._meter = meter

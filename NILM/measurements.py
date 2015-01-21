@@ -26,4 +26,6 @@ class Measurements(pd.DataFrame):
         if sampling_period is not None:
             df = preprocessing.resample(df, sampling_period)
 
+        df = df.sort_index()
+        df.index.name = 'timestamps'
         super(Measurements, self).__init__(df)
