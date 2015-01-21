@@ -102,7 +102,7 @@ class ApplianceModels(pd.DataFrame):
         super(ApplianceModels, self).__init__()
         self.building_model = BuildApplianceModels(name, **parameters)
 
-    def build_appliance_models(self, meter):
+    def modeling(self, meter):
         #  Check that the clustering on meter was done
         try:
             meter.clusters
@@ -157,7 +157,7 @@ class ApplianceModels(pd.DataFrame):
 
 if __name__ == '__main__':
     appliance_models = ApplianceModels('simple')
-    appliance_models.build_appliance_models(meter1)
+    appliance_models.modeling(meter1)
     meter1.appliance_models = appliance_models
 
         

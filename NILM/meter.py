@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
+import matplotlib.pyplot as plt
 from measurements import Measurements
 from events import Events
 from clusters import Clusters
+from appliance_models import ApplianceModels
+from appliance_behaviors import ApplianceBehaviors
 
 
 class Meter(object):
@@ -50,7 +53,6 @@ class Meter(object):
         g = dict_repr.__repr__()
         return g
 
-
     def load_measurements(self, sampling_period=1):
         """
         Load the measurments in a pd.DataFrame. The elapsed time between each
@@ -65,18 +67,35 @@ class Meter(object):
         self.events.detection(detection_type, **kwargs)
         self.state['event_detected'] = True
         self.state['detection_type'] = detection_type
-    
+
     def cluster_events(self, clustering_type='DBSCAN', phases_separation=True,
                        features=None, **clustering_parameters):
         assert self.state['event_detected']
         self.clusters = Clusters(self, clustering_type,
-                                 phases_separation=self.phase_by_phase, 
+                                 phases_separation=self.phase_by_phase,
                                  features=None, **clustering_parameters)
 
         self.clusters.clustering()
         self.state['clustering'] = True
-    
 
+    def model_appliances(self, modeling_type='simple',
+                         **modeling_parameters):
+        try:
+            self.clusters
+        except AttributeError:
+            raise AttributeError('Meter: cluster first the events!')
+        self.appliance_models = ApplianceModels(modeling_type,
+                                                **modeling_parameters)
+        self.appliance_models.modeling(self)
+
+    def track_behaviors(self):
+        try:
+            self.appliance_models
+        except AttributeError:
+            raise AttributeError('Meter: model first the appliances!')
+        self.appliance_behaviors = ApplianceBehaviors()
+        self.appliance_behaviors.tracking(self)
+        
 
 if __name__ == '__main__':
     from utils.tools import create_user
@@ -86,4 +105,13 @@ if __name__ == '__main__':
     meter1.load_measurements(sampling_period=1)
     meter1.detect_events(detection_type='steady_states', edge_threshold=100)
     meter1.cluster_events(clustering_type='DBSCAN', phases_separation=True,
-                       features=None, eps=35)
+                          features=None, eps=35)
+    meter1.model_appliances(modeling_type='simple')
+    meter1.track_behaviors()
+    for phase, appliance in meter1.appliance_behaviors.columns:
+        print appliance
+        meter1.measurements[phase][meter1.power_types[0]].plot()
+        meter1.appliance_behaviors[phase][appliance].plot(color='r')
+        plt.show()
+        
+        

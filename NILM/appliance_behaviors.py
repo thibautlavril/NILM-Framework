@@ -43,8 +43,8 @@ def deleting_anomamlies(transitions):
     return appliance_transitions, transition_matched
 
 
-def build_consumption(timestamps, time_events, appliance_transitions,
-                      transitions_values):
+def simple_tracking(timestamps, time_events, appliance_transitions,
+                    transitions_values):
     # Initialization of dataframe with the appliance state and consumption
     df = pd.DataFrame(index=timestamps)
     appliance_state = np.zeros(len(timestamps))
@@ -100,12 +100,12 @@ class TrackApplianceBehavior(object):
             self.parameters[k] = v
 
 
-class ApplianceBehavior(pd.DataFrame):
+class ApplianceBehaviors(pd.DataFrame):
 
-    def __init__():
-        super(ApplianceBehavior, self).__init()
+    def __init__(self):
+        super(ApplianceBehaviors, self).__init__()
 
-    def build_consumptions(self, meter):
+    def tracking(self, meter):
         assert meter.phase_by_phase # Check that meter disagregate by phase
 
         phases = meter.phases
@@ -136,12 +136,14 @@ class ApplianceBehavior(pd.DataFrame):
                 df2['transition_matched'] = transition_matched
                 time_events = df2['index'].values
                 transitions_values = df2[power_main]
-                conso = build_consumption(timestamps, time_events, appliance_transitions,
+                conso = simple_tracking(timestamps, time_events, appliance_transitions,
                       transitions_values)
                 conso = conso['consumption'].values
                 name = 'appliance_' + str(int(appliance))
-                consumptions[name] = conso
-        super(ApplianceBehavior, self).__init__(consumptions)
+                index = (phase, name)
+                consumptions[index] = conso
+        consumptions.columns = pd.MultiIndex.from_tuples(consumptions.columns)
+        super(ApplianceBehaviors, self).__init__(consumptions)
                 
                 
                 
