@@ -9,16 +9,27 @@ import os
 from os.path import isdir, isfile, join
 from dateutil.parser import parse
 import json
-try:
-    from ..utils import utils_nilmtk
-except ValueError:
-    abspath = os.getcwd()
-    NILMpath = os.path.dirname(os.path.dirname(abspath))
-    sys.path.append(NILMpath)
-    from NILM.utils import utils_nilmtk
 
 
-def convert_blued_to_user(input_path, hdf_path):
+metadata_BLUED = {
+    "number_users": 1,
+    "users": {
+        'user_blued': {
+            "number_meters": 1,
+            "meters": {
+                'meter_blued': {
+                    "number_datasets": 2,
+                    "measurements": {"phases": ['A', 'B'],
+                                     "power_types": ['P', 'Q']},
+                    "tz": "US/Eastern"
+                }
+            }
+        }
+    }
+}
+
+
+def blued_to_user(input_path, hdf_path):
     """
     Convert the matlab files of Blued into a pd.DataFrame. The dataframe is
     stored in a HDFS file (one file by user). IMPORTANT: The matlab files needs
@@ -34,7 +45,6 @@ def convert_blued_to_user(input_path, hdf_path):
     assert isdir(input_path)
     assert isdir(hdf_path)
 
-    metadata_BLUED = _load_metadata_BLUED()
     _convert_data(input_path, hdf_path, metadata_BLUED)
     print("Convertion finished!")
 
@@ -59,9 +69,9 @@ def _give_path_script():
 def _convert_data(input_path, hdf_path, metadata_BLUED):
     for user in metadata_BLUED['users'].keys():
         metadata_user = metadata_BLUED["users"][user]
-        print("Loading", user, end=" ")
+        print("Loading", user, end=": ")
         sys.stdout.flush()
-        _convert_user(input_path, hdf_path, metadata_user)
+        _convert_user(input_path, hdf_path, metadata_user, user)
 
 
 def _convert_metadata_user(hdf_filename, metadata_user):
@@ -69,9 +79,8 @@ def _convert_metadata_user(hdf_filename, metadata_user):
         store.root._v_attrs.metadata = metadata_user
 
 
-def _convert_user(input_path, hdf_path, metadata_user):
-    user_id = metadata_user['user_id']
-    hdf_filename = _make_hdf_file(user_id, hdf_path)
+def _convert_user(input_path, hdf_path, metadata_user, user):
+    hdf_filename = _make_hdf_file(user, hdf_path)
     if os.path.exists(hdf_filename):
         os.remove(hdf_filename)
     _convert_metadata_user(hdf_filename, metadata_user)
@@ -79,13 +88,11 @@ def _convert_user(input_path, hdf_path, metadata_user):
         metadata_meter = metadata_user["meters"][meter]
         print(meter, end="... ")
         sys.stdout.flush()
-        _convert_meter(input_path, hdf_path, metadata_meter)
+        _convert_meter(input_path, hdf_path, metadata_meter, meter, user)
 
 
-def _convert_meter(input_path, hdf_path, metadata_meter):
+def _convert_meter(input_path, hdf_path, metadata_meter, meter, user):
     number_datasets = metadata_meter["number_datasets"]
-    meter = metadata_meter["meter_id"]
-    user = metadata_meter["user_id"]
     hdf_filename = _make_hdf_file(user, hdf_path)
     key_measurements = _make_key_measurements(meter)
     tz = metadata_meter["tz"]
@@ -94,20 +101,22 @@ def _convert_meter(input_path, hdf_path, metadata_meter):
         for dataset in np.arange(1, number_datasets + 1):
             print(dataset, end=" ")
             sys.stdout.flush()
-            df = _load_dataset(dataset, input_path, metadata_meter, start)
+            df = _load_dataset(dataset, input_path, metadata_meter, start,
+                               meter)
             store.append(str(key_measurements), df, format='table')
             store.flush()
     print()
 
 
-def _load_dataset(dataset, input_path, metadata_meter, start):
+def _load_dataset(dataset, input_path, metadata_meter, start, meter):
     measurements = metadata_meter["measurements"]
-    meter = metadata_meter["meter_id"]
-    path = _make_input_path(meter, dataset, input_path)
+    phases = measurements['phases']
+    power_types = measurements['power_types']
+    path = _make_input_path_blued(meter, dataset, input_path)
     assert isdir(path)
     index = None
     data = None
-    sub_files = _make_list_subfiles(dataset)
+    sub_files = _make_list_subfiles_blued(dataset)
     for sub_file in sub_files:
         measures, timestamps = _load_subfile(sub_file, dataset,
                                              meter, path)
@@ -119,13 +128,13 @@ def _load_dataset(dataset, input_path, metadata_meter, start):
             index = np.concatenate((index, timestamps), axis=0)
     tz = metadata_meter["tz"]
     index = _sec_since_start_to_Datetime(index, start, tz)
-    cols = pd.MultiIndex.from_tuples(measurements, names=['phase', 'type'])
+    cols = pd.MultiIndex.from_product([phases, power_types])
     df = pd.DataFrame(data, columns=cols, index=index, dtype='float32')
     return df
 
 
 def _load_subfile(sub_file, dataset, meter, path):
-    input_file = _make_input_file(sub_file, dataset, meter, path)
+    input_file = _make_input_file_blued(sub_file, dataset, meter, path)
     assert isfile(input_file)
     mat = scipy.io.loadmat(input_file)
     t = mat['data'][0][0][2]
@@ -155,39 +164,39 @@ def _sec_since_start_to_Datetime(index, start, tz):
     return index
 
 
-def _make_input_file(sub_file, dataset, meter, path):
-    meter_path = 'location_00{:d}'.format(meter)
+def _make_input_file_blued(sub_file, dataset, meter, path):
+    meter_path = 'location_00{:d}'.format(1)
     filename = "_".join((meter_path,
                          'matlab_{:d}.mat'.format(sub_file)))
     filename = "/".join((path, filename))
     return filename
 
 
-def _make_input_path(meter, dataset, input_path):
-    meter_path = 'location_00{:d}'.format(meter)
+def _make_input_path_blued(meter, dataset, input_path):
+    meter_path = 'location_00{:d}'.format(1)
     dataset_path = "_".join((meter_path, 'dataset_00{:d}'.format(dataset)))
     path = "/".join((input_path, dataset_path))
     return path
 
 
-def _make_list_subfiles(dataset):
+def _make_list_subfiles_blued(dataset):
     first_subfile = (dataset-1)*4 + 1
     last_subfile = first_subfile + 4
     return range(first_subfile, last_subfile)
 
 
 def _make_hdf_file(user, hdf_path):
-    filename = "user{:d}.h5".format(user)
+    filename = "{:s}.h5".format(user)
     hdf_filename = "".join((hdf_path, filename))
     return hdf_filename
 
 
 def _make_key_measurements(meter):
-    return "/meter{:d}/measurements".format(meter)
+    return "/{:s}/measurements".format(meter)
 
 
 def _find_start(meter, input_path, tz):
-    name_dir = "_".join(('/location_00{:d}'.format(meter), 'dataset_001/'))
+    name_dir = "_".join(('/location_00{:d}'.format(1), 'dataset_001/'))
     start_end_path = "".join((input_path, name_dir))
     start_end_file = "".join((start_end_path, 'start_end.txt'))
     with open(start_end_file) as f:
@@ -202,10 +211,10 @@ def _find_start(meter, input_path, tz):
 if __name__ == "__main__":
     hdf_path = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/'
     input_path = '/Volumes/Stockage/DATA/DATA_BLUED/RAW'
-    convert_blued(input_path, hdf_path)
-    hdf_filename = _make_hdf_file(1, hdf_path)
+    blued_to_user(input_path, hdf_path)
+    hdf_filename = _make_hdf_file("user_blued", hdf_path)
     print(hdf_filename)
-    key = _make_key_measurements(1)
+    key = _make_key_measurements("meter_blued")
     with pd.get_store(hdf_filename) as store:
         df = store[key]
         metadata_dict = store.root._v_attrs.metadata

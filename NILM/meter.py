@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 from measurements import Measurements
 from events import Events
 from clusters import Clusters
@@ -8,50 +9,58 @@ from appliance_models import ApplianceModels
 from appliance_behaviors import ApplianceBehaviors
 
 
-class Meter(object):
+class Store(object):
 
-    def __init__(self, user, meter_name):
-        self._user = user
-        assert meter_name in user.metadata['meters']
-        self.name = meter_name
-        self.metadata = user.metadata['meters'][meter_name]
-        self.state = dict()
-        self.state['data_loaded'] = False
-        self.state['event_detected'] = False
-        self.measurements = Measurements(self)
-        self.events = Events(self)
-        self.phase_by_phase = True
-    
-    @property
-    def features(self):
-        columns = self.metadata['measurements']
-        features = pd.MultiIndex.from_tuples(columns)
-        return features
-    
-    @property
-    def phases(self):
-        return self.features.levels[0]
-    
-    @property
-    def power_types(self):
-        return self.features.levels[1]
-
-    @property
-    def store(self):
-        """ Get the store"""
-        return self._user.store
-
-    @property
-    def user(self):
-        """ Get the user"""
-        return self._user
+    def __init__(self, filename=None, key=None):
+        self.filename = str(filename)
+        self.key = str(key)
 
     def __repr__(self):
-        dict_repr = dict()
-        dict_repr["meter_id"] = self.metadata['meter_id']
-        dict_repr["disaggregation_state"] = self.state
-        g = dict_repr.__repr__()
-        return g
+        return self.__dict__.__repr__()
+
+
+class Meter(object):
+
+    def __init__(self, metadata=None, phases=None, power_types=None,
+                 store=None, ID=None):
+        self.phases = phases
+        self.metadata = metadata
+        self.power_types = power_types
+        self.store = store
+        self.ID = ID
+
+    @staticmethod
+    def from_user(user, meter_ID):
+        assert meter_ID in user.meters_ID
+        metadata = user.metadata['meters'][meter_ID]
+
+        measurements = metadata['measurements']
+        phases = measurements['phases']
+        power_types = measurements['power_types']
+
+        key = "/".join((meter_ID, 'measurements'))
+        store = Store(user.filename, key)
+
+        meter = Meter(metadata, phases, power_types, store, meter_ID)
+        return meter
+
+    @staticmethod
+    def from_meter_hdf(hdf_filename):
+        assert os.path.isfile(hdf_filename)
+        with pd.get_store(hdf_filename) as store:
+            metadata = store.root._v_attrs.metadata
+        
+        meter_ID = hdf_filename.split('/')[-1]
+        phases = list(metadata['phases'])
+        power_types = list(metadata['power_types'])
+
+        key = 'measurements'
+        store = Store(hdf_filename, key)
+        meter = Meter(metadata, phases, power_types, store, meter_ID)
+        return meter
+
+    def __repr__(self):
+        return str(self.ID)
 
     def load_measurements(self, sampling_period=1):
         """
@@ -97,7 +106,7 @@ class Meter(object):
         self.appliance_behaviors.tracking(self)
         
 
-if __name__ == '__main__':
+if __name__ == '__main_s_':
     from utils.tools import create_user
     user1 = create_user()
     meter1_name = user1.metadata['meters'].keys()[0]

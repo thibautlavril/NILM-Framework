@@ -14,27 +14,28 @@ class User(object):
 
     def __init__(self, hdf_filename):
         assert os.path.isfile(hdf_filename)
-        self.store = hdf_filename
-        self.meters = dict()
-        self.metadata = dict()
+        with pd.get_store(hdf_filename) as store:
+            metadata = store.root._v_attrs.metadata
 
-    def load(self):
-        """"
-        Load the metadata of the file to create the meters and the metadata of
-        our user
-        """ 
-        with pd.get_store(self.store) as store:
-            self.metadata = store.root._v_attrs.metadata
-        for meter_name in self.metadata['meters'].keys():
-            meter = Meter(self, meter_name)
-            self.meters[meter_name] = meter
+        self.ID = hdf_filename.split('/')[-1]
+        self.metadata = metadata
+        self.filename = hdf_filename
 
-    def __getitem__(self, key):
-        key_dict = self.meters.keys()[key]
-        return self.meters[key_dict]
+        meters_ID = []
+        for meter_ID in metadata['meters'].keys():
+            meters_ID.append(meter_ID)
+        self.meters_ID = meters_ID
+
+        meters = []
+        for meter_ID in metadata['meters'].keys():
+            meter = Meter.from_user(self, meter_ID)
+            meters.append(meter)
+        self.meters = meters
+    
+    def __repr__(self):
+        return str(self.ID)
 
 
 if __name__ == "__main__":
-    hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user1.h5'
-    user1 = User(hdf_filename)
-    user1.load()
+    hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user_blued.h5'
+    user = User(hdf_filename)
