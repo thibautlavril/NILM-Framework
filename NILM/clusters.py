@@ -11,7 +11,7 @@ class Clusters(pd.DataFrame):
             "model": clustering.DBSCAN,
             "parameters": {
                 "eps": 35,
-                "min_samples": 2}},
+                "min_samples": 1}},
             "MeanShift": {
                 "model": clustering.MeanShift,
                 "parameters": {}}}
@@ -45,21 +45,18 @@ class Clusters(pd.DataFrame):
 
         n_labels = 0
         labels_arr = -10*np.ones(n_events)
-        i = 0
 
         for phase in phases:
-            mask = (meter.events.phase == phase)
+            mask = (meter.events.phase == phase).values
             X = meter.events[features][mask].values
-            n = len(X)
             model = clustering_model(**parameters)
             model.fit(X)
             # Different labels for each phase, but -1 when not clustered
             labels = model.labels_ + n_labels
             # but label -1 when not clustered
             np.place(labels, labels == n_labels-1, -1)
-            labels_arr[i:i+n] = labels
+            labels_arr[mask] = labels
             n_labels = n_labels + model.labels_.max() + 1
-            i = n
         meter.events['cluster'] = labels_arr
 
         self.phases_ = meter.phases
@@ -67,7 +64,8 @@ class Clusters(pd.DataFrame):
 
         df = meter.events.groupby(['phase', 'cluster']).mean()
         serie_count = meter.events.groupby(['phase', 'cluster']).count()
-        df['count'] = serie_count[meter.power_types[0]].values
+        df['n_events'] = serie_count[meter.power_types[0]].values
+        df = df.reset_index()
         super(Clusters, self).__init__(df)
 
     def plot_clusters_2D(self, meter):

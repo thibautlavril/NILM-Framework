@@ -7,75 +7,9 @@ Created on Thu Jan 15 09:38:02 2015
 
 import pandas as pd
 import numpy as np
-from sklearn.metrics.pairwise import pairwise_distances
-from sklearn.cluster import AffinityPropagation, DBSCAN
+import modeling
 
 
-def euclidian_cluster(x1, x2):
-    assert x1.shape == x2.shape
-    return np.linalg.norm(x1 + x2)
-
-
-def simple_association(X, distance_threshold, metric):
-    #  Construct the distance matrix D
-    D = pairwise_distances(X, metric=metric)
-
-    # Initialization
-    d = 0  # Distance between two clusters
-    n_appli = 0
-    appliances = -1*np.ones_like(D[0])  # appliances set at -1
-
-    while d < distance_threshold:
-
-        # Find the new min > d
-        D_masked = D[D > d]
-        d = D_masked.min()  # Update d
-
-        # Find coordinates of min
-        xx, yy = np.indices(D.shape)
-        xxx = xx[D == d]  # array of x
-        yyy = yy[D == d]  # array of y
-
-        for (x, y) in zip(xxx, yyy):
-            if (appliances[x] == -1) & (appliances[y] == -1):
-                # if x and y doesn't have appliance, set them at n_appli
-                appliances[x] = n_appli
-                appliances[y] = n_appli
-                n_appli += 1
-
-    return appliances
-
-
-def dbscan_association(X, metric=euclidian_cluster, **dbscan_parameters):
-    #  Construct the distance matrix D
-    D = pairwise_distances(X, metric=euclidian_cluster)
-    #  Compute a DBSCAN clustering for a distance matrix
-    model = DBSCAN(metric='precomputed', **dbscan_parameters)
-    appliances = model.fit_predict(D)
-    return appliances
-
-
-def affinity_propagation_association(X, **dbscan_parameters):
-    pass
-
-
-associationsDict = {
-    "simple": {
-        "model": simple_association,
-        "parameters": {
-            'distance_threshold': 35,
-            'metric': euclidian_cluster
-            }
-        },
-    "dbscan": {
-        "model": dbscan_association,
-        "parameters": {
-            'eps': 35,
-            'min_samples': 1,
-            'metric': euclidian_cluster
-            }
-        }
-    }
 
 
 class BuildApplianceModels(object):
@@ -98,66 +32,89 @@ class BuildApplianceModels(object):
 
 class ApplianceModels(pd.DataFrame):
 
-    def __init__(self, name, **parameters):
+    association_two_states_types = {
+        "simple": {
+            "model": modeling.simple_association_two_states,
+            "parameters": {
+                'distance_threshold': 35,
+                'metric': modeling.euclidian_cluster_metric}},
+        "dbscan": {
+            "model": modeling.affinity_propagation_association_two_states,
+            "parameters": {
+                'eps': 35,
+                'min_samples': 1,
+                'metric': modeling.euclidian_cluster_metric}}
+    }
+
+    def __init__(self, association_two_states_type,
+                 **association_two_sates_parameters):
         super(ApplianceModels, self).__init__()
-        self.building_model = BuildApplianceModels(name, **parameters)
+        assert association_two_states_type in\
+            ApplianceModels.association_two_states_types
+        association_two_states_dict = ApplianceModels.\
+            association_two_states_types[association_two_states_type]
+        model_2states = association_two_states_dict['model']
+        parameters_2states = association_two_states_dict['parameters']
+        # Add the parameters from **parameters in the dict
+        for k, v in association_two_sates_parameters.iteritems():
+            parameters_2states[k] = v
+
+        self.model_2states = model_2states
+        self.parameters_2states = parameters_2states
 
     def modeling(self, meter):
         #  Check that the clustering on meter was done
-        try:
-            meter.clusters
-        except AttributeError:
-            raise AttributeError('Cluster before building appliance models!')
-
         clusters = meter.clusters
 
         #  Take the list of phases and powers measured by meter
         powers = meter.power_types
         phases = meter.phases
 
-        #  Check that the process is made phase by phase
-        assert(meter.phase_by_phase)
+        # I.Modeling two states apliance
 
         #  Initialization
-        appliances = np.array([])
+        appliances = -10*np.ones(len(clusters.index))
+        transitions = np.zeros(len(clusters.index))
         n_appliances = 0
+        model_2states = self.model_2states
+        parameters_2states = self.parameters_2states
 
         for phase in phases:
-            #  Select the clusters of this phase
-            df = clusters.ix[phase]
+            #  Select the clusters of this phase and with label != -1
+            mask = ((clusters.phase == phase) & (clusters.cluster != -1)).values
+            df = clusters[mask]
             # Select the powers
             X = df[powers].values
 
             # Associate the clusters to make appliances.
             # The model and the parameters used
             # are stored in the building_model object
-            model = self.building_model.model
-            parameters = self.building_model.parameters
-            a = model(X, **parameters)
+            a = model_2states(X, **parameters_2states)
             a = np.where(a == -1, -1, a + n_appliances)
             n_appliances = max(a) + 1
-            appliances = np.append(appliances, a)
+
+            # Add if transition is 'on' or 'off'
+            t = np.zeros_like(a)
+            mask_2 = (a != -1)
+            P = X[mask_2][:, 0]
+            t[mask_2] = np.where(P > 0, 1, -1)
+            appliances[mask] = a
+            transitions[mask] = t
 
         # Add appliances label to meter.clusters
-        appliances = np.array(appliances)
         meter.clusters['appliance'] = appliances
+        meter.clusters['transition'] = transitions
 
         # Construct the pd.DataFrame Appliances Model
-        df = meter.clusters.reset_index()
-        df = df.sort(columns=['phase', 'appliance', 'cluster'])
-        transition_on = np.where((df['P'] > 0) & (df['appliance'] != -1),
-                                    1, 0)
-        transitions = np.where((df['P'] < 0) & (df['appliance'] != -1),
-                                    -1, transition_on)
-        df['transition'] = transitions
-                                    
-        df = df.set_index('appliance')
+        df = meter.clusters.sort_index(by=['phase', 'appliance', 'transition'])
+        df = df.set_index(['phase', 'appliance', 'transition'])
+        df = df.reset_index()
         super(ApplianceModels, self).__init__(df)
 
-
 if __name__ == '__main__':
-    appliance_models = ApplianceModels('simple')
-    appliance_models.modeling(meter1)
-    meter1.appliance_models = appliance_models
+    am = ApplianceModels('simple')
+    am.modeling(meter)
 
-        
+
+
+

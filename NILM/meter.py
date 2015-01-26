@@ -8,7 +8,7 @@ from measurements import Measurements
 from events import Events
 from clusters import Clusters
 from appliance_models import ApplianceModels
-from appliance_behaviors import ApplianceBehaviors
+from appliance_consumptions import ApplianceConsumptions
 
 
 class Store(object):
@@ -113,23 +113,35 @@ class Meter(object):
         except AttributeError:
             return AttributeError('Meter: cluster events before!')
 
-    def model_appliances(self, modeling_type='simple',
-                         **modeling_parameters):
-        try:
-            self.clusters
-        except AttributeError:
-            raise AttributeError('Meter: cluster first the events!')
-        self.appliance_models = ApplianceModels(modeling_type,
-                                                **modeling_parameters)
-        self.appliance_models.modeling(self)
+    def model_appliances(self, association_two_states_type,
+                         **association_two_sates_parameters):
+        appliance_models = ApplianceModels(association_two_states_type,
+                                           **association_two_sates_parameters)
+        appliance_models.modeling(self)
+        self.appliance_models_ = appliance_models
+        print "Meter: appliances modeled!"
 
-    def track_behaviors(self):
+    @property
+    def appliance_models(self):
         try:
-            self.appliance_models
+            return self.appliance_models_
         except AttributeError:
-            raise AttributeError('Meter: model first the appliances!')
-        self.appliance_behaviors = ApplianceBehaviors()
-        self.appliance_behaviors.tracking(self)
+            return AttributeError('Meter: model appliances before!')
+
+    def track_consumptions(self, tracking_type, **tracking_parameters):
+        appliance_consumptions = ApplianceConsumptions(tracking_type,
+                                                       **tracking_parameters)
+        appliance_consumptions.tracking(self)
+        self.appliance_consumptions_ = appliance_consumptions
+        print "Meter: appliance consumptions tracked!"
+
+    @property
+    def appliance_consumptions(self):
+        try:
+            return self.appliance_consumptions_
+        except AttributeError:
+            return AttributeError('Meter: track appliances consumptions\
+                                   before!')
 
 
 if __name__ == '__main__':
@@ -140,4 +152,6 @@ if __name__ == '__main__':
 
     meter.load_measurements(sampling_period=10)
     meter.detect_events(detection_type='steady_states')
-    meter.cluster_events('DBSCAN')
+    meter.cluster_events('DBSCAN', eps=35)
+    meter.model_appliances('simple')
+    meter.track_consumptions('simple')

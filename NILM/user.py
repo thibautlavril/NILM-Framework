@@ -31,7 +31,7 @@ class User(object):
             meter = Meter.from_user(self, meter_ID)
             meters.append(meter)
         self.meters = meters
-    
+
     def __repr__(self):
         return str(self.ID)
 
