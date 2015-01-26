@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import os
 
 import converter
-
 from measurements import Measurements
 from events import Events
 from clusters import Clusters
@@ -100,15 +99,19 @@ class Meter(object):
         except AttributeError:
             return AttributeError('Meter: detect events before!')
 
-    def cluster_events(self, clustering_type='DBSCAN', phases_separation=True,
-                       features=None, **clustering_parameters):
-        assert self.state['event_detected']
-        self.clusters = Clusters(self, clustering_type,
-                                 phases_separation=self.phase_by_phase,
-                                 features=None, **clustering_parameters)
+    def cluster_events(self, clustering_type, features=None,
+                       **clustering_parameters):
+        clusters = Clusters(clustering_type, **clustering_parameters)
+        clusters.clustering(self, features)
+        self.clusters_ = clusters
+        print "Meter: events clustered!"
 
-        self.clusters.clustering()
-        self.state['clustering'] = True
+    @property
+    def clusters(self):
+        try:
+            return self.clusters_
+        except AttributeError:
+            return AttributeError('Meter: cluster events before!')
 
     def model_appliances(self, modeling_type='simple',
                          **modeling_parameters):
@@ -127,18 +130,14 @@ class Meter(object):
             raise AttributeError('Meter: model first the appliances!')
         self.appliance_behaviors = ApplianceBehaviors()
         self.appliance_behaviors.tracking(self)
-        
+
 
 if __name__ == '__main__':
     from user import User
     hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user_blued.h5'
     user = User(hdf_filename)
     meter = user.meters[0]
-    
+
     meter.load_measurements(sampling_period=10)
     meter.detect_events(detection_type='steady_states')
-
-    
-
-            
-        
+    meter.cluster_events('DBSCAN')

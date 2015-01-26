@@ -1,10 +1,6 @@
 from sklearn.cluster import DBSCAN
 
 
-class DBSCAN(DBSCAN):
-
-    pass
-
 
 # def dbscan(events, eps, min_samples,
 #            features=['delta P', 'delta Q'], viz=False,

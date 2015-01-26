@@ -1,13 +1,10 @@
 # import pandas as pd
-from sklearn.cluster import MeanShift, estimate_bandwidth
+from sklearn.cluster import MeanShift
 # import numpy as np
 
 # Remark continue to correct it
 
 
-class MeanShift(MeanShift):
-
-    pass
 
 # def mean_shift_clustering(pair_buffer_df, features):
 #     # Creating feature vector
@@ -26,7 +23,7 @@ class MeanShift(MeanShift):
 #         cluster_df['delta'] = cluster_df['delta'].apply(lambda x: int(x) / 6e10)
 #     if 'hour_of_use' in features:
 #         cluster_df['hour_of_use'] = pd.DatetimeIndex(pair_buffer_df['T1 Time']).hour
-    
+
 #     """
 #     if 'sd_event' in features:
 #         cluster_df['sd_event'] = pd.Series(pair_buffer_df.apply(lambda row:
