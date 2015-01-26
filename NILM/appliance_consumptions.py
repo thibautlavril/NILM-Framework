@@ -88,17 +88,3 @@ class ApplianceConsumptions(pd.DataFrame):
         df = df.sort_index(by=['phase', 'timestamps'])
         meter.events['event_matched'] = df['event_matched'].values
         super(ApplianceConsumptions, self).__init__(consumptions)
-
-if __name__ == '__main__':
-    ap = ApplianceConsumptions('simple')
-    ap.tracking(meter)
-
-
-
-
-
-
-
-
-
-
