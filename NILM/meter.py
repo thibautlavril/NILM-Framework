@@ -11,6 +11,28 @@ from appliance_consumptions import ApplianceConsumptions
 
 
 class Store(object):
+    """ Adress where the data of a meter is stored.
+
+    Parameters
+    ----------
+    filename: str
+        Path + filename of the HDFS file where the data is stored
+        It can be a user or a meter file.
+    key: str
+        Key used to index the data of the meter inside the HDFS file.
+        If the file is a user file the key is "meter_ID/measurements".
+        If the file is a meter the key is "measurements".
+
+    Attributes
+    ----------
+    filename: str
+        Path + filename of the HDFS file where the data is stored
+        It can be a user or a meter file.
+    key: str
+        Key used to index the data of the meter inside the HDFS file.
+        If the file is a user file the key is "meter_ID/measurements".
+        If the file is a meter the key is "measurements".
+    """
 
     def __init__(self, filename=None, key=None):
         self.filename = str(filename)
