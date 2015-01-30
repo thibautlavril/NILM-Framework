@@ -17,7 +17,9 @@ class Store(object):
     ----------
     filename: str
         Path + filename of the HDFS file where the data is stored
-        It can be a user or a meter file.
+        It can be a user or a meter HDFS file. For more informations
+        on meter HDFS file, see NILM.converter.dataframe_to_meter function.
+
     key: str
         Key used to index the data of the meter inside the HDFS file.
         If the file is a user file the key is "meter_ID/measurements".
@@ -43,6 +45,48 @@ class Store(object):
 
 
 class Meter(object):
+    """Main object for disaggregation.
+
+    Models a real meter. The data is in a HDFS store and can be loaded
+    into the Measurements attribute. All the actions to disaggregate a meter
+    are performed on the Meter object.
+
+    Attributes
+    ----------
+    metadata: dict
+        Contains additionnal informations on the meter.
+        Example: timezone, start of the measurements etc...
+
+    phases: list of str
+        List of phases measured by meter.
+
+    power_types: list of str
+        List of power types measured by meter.
+        Example: ['P', 'Q'], ['apparent', 'reactive']
+
+    store: NILM.Store object
+        Where the data of the meter is stored.
+
+    measurements: NILM.Measurements object
+        Data of the meter. Measurements of powers for each timestamps. Requires
+        to load the measurements of the meter to exist.
+
+    events: NILM.Events object
+        Events detected in the measurements. Requires to detect the events of
+        the meter to exist.
+
+    clusters: NILM.Clusters object
+        Clusters of events detected. Requires to cluster the events of the
+        meter to exist.
+
+    appliance_models: NILM.ApplianceModels object
+        Appliances models constructed with the clusters. Requires to model the
+        appliance of the meter first.
+
+    appliance_consumptions: NILM.ApplianceConsumptions object
+        Consumptions of the disaggregated appliances. Requires to track the
+        consumptions of the meter before.
+    """
 
     def __init__(self, metadata=None, phases=None, power_types=None,
                  store=None, ID=None):
@@ -54,6 +98,16 @@ class Meter(object):
 
     @staticmethod
     def from_user(user, meter_ID):
+        """Create a Meter from a User object.
+
+        Parameters
+        ----------
+        user: NILM.User object
+            User which own the meter.
+
+        meter_ID: str
+            Name of the meter. Needs to a a ID in the User.meters_ID list.
+        """
         assert meter_ID in user.meters_ID
         metadata = user.metadata['meters'][meter_ID]
 
@@ -69,6 +123,17 @@ class Meter(object):
 
     @staticmethod
     def from_meter_hdf(hdf_filename):
+        """Create a Meter from a meter HDFS file.
+
+        For more informations on meter HDFS file,
+        see NILM.converter.dataframe_to_meter function.
+
+        Parameters
+        ----------
+        hdf_filename: str
+            Path + filename of the meter HDFS file. For more informations on
+            meter HDFS file, see NILM.converter.dataframe_to_meter function.
+        """
         assert os.path.isfile(hdf_filename)
         with pd.get_store(hdf_filename) as store:
             metadata = store.root._v_attrs.metadata
@@ -84,6 +149,23 @@ class Meter(object):
 
     @staticmethod
     def from_dataframe(df, hdf_filename):
+        """Create a Meter from a dataframe.
+
+        The meter is store in a meter HDFS file. For more informations on
+        meter HDFS file, see NILM.converter.dataframe_to_meter function.
+
+        Parameters
+        ----------
+        df: pandas.DataFrame
+            Dataframe containing the measurements of the powers for the
+            phases and power types measured by a meter. The format of the
+            DataFrame is specified in converter.dataframe_to_meter function.
+
+         hdf_filename: str
+            Path + filename of the meter HDFS file. To create a meter
+            HDFS file, see NILM.converter.dataframe_to_meter function.
+        """
+
         converter.dataframe_to_meter(df, hdf_filename)
         return Meter.from_meter_hdf(hdf_filename)
 
@@ -91,9 +173,7 @@ class Meter(object):
         return str(self.ID)
 
     def load_measurements(self, sampling_period):
-        """
-        Load the measurments in a pd.DataFrame. The elapsed time between each
-        sample is given by sampling_period in seconds
+        """ Create a measurements attribute.
         """
         measurements = Measurements(sampling_period)
         measurements.load_data(self)
