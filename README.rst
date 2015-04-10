@@ -35,8 +35,8 @@ The algorithm is composed of different steps:
 
 The total consumption is therefore breakdown into different appliances. These appliances are not labelled. The ultimate part consits of using a supervised machine learning algorithm to label each appliance after disaggregation (not implemented here).
 
-Algorithm Overview
-==================
+References
+==========
 
 [1] Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
 
