@@ -12,6 +12,61 @@ import modeling
 
 class ApplianceModels(pd.DataFrame):
 
+    """
+    This class inherits from pandas.DataFrame.
+
+    The main method is the modeling of appliances. The modeling
+    of appliances method take as input a meter
+    (where the events are already clustered). It
+    will model the appliances by grouping some clusters of events.
+    The current algorithm allows only to model two-states-appliances.
+    The clusters are defined in Clusters class. The modeling construct
+    a pd.dataFrame where the columns are ['phase', 'appliance', 'transition'].
+    Each row is a cluster. Therefore for each cluster an appliance number
+    will be defined. This method can use diffent modeling functions.
+    These functions are implemented in the submodule 'modeling'.
+    The function used is choosed in the __init__ of ApplianceModels.
+
+    The pandas.DataFrame constructed allows therefore to know at
+    which appliance each cluster is associated.
+
+    Parameters
+    ----------
+    association_two_states_type: string
+        Name of the function used to create two-state
+        appliance models. Needs to be one of the
+        keys of the dictionnary association_two_states_types.
+    association_two_sates_parameters: dict (optional)
+        dict of parameters/value to be passed as argument of the
+        function model_2states. Arguments not informed will
+        take the default value defined in the dictionnary
+        association_two_states_types.
+
+    Attributes
+    ----------
+    association_two_states_types: dict, (class variable)
+        Dictionnary wich lists all the methods to create two-states appliances
+        implemented. The keys are the name of the methods to create two-states
+        appliances implemented.. The values are dictionnary with two keys:
+        'model' and 'parameters'. The value associated to 'model' is a
+        function for which associate clusters to create two-states appliances.
+        This function is implemented into the submodule 'modeling
+        The values associated to 'parameters' is a dictionnary nwhich map
+        the names of the arguments of the model with the default
+        value of theses parameters. NOTE: When a new tracking function is
+        implemented in 'modeling' submodule, the function and default
+        parameters need to be entered into this dict.
+    tracking_type: string
+        Name of the tracking model used. Needs to belong to be one
+        key of the dictionnary tracking_types.
+    model_2states: function
+        Function used to do the association_two_states. Function are
+        implemented in the submodule 'modleing'.
+    parameters_2states: dict
+        dict of parameters/value to be passed as argument of the
+        function model_2states.
+    """
+
     association_two_states_types = {
         "simple": {
             "model": modeling.simple_association_two_states,
@@ -43,6 +98,26 @@ class ApplianceModels(pd.DataFrame):
         self.parameters_2states = parameters_2states
 
     def modeling(self, meter):
+        """
+        The modeling of appliances method take as input a meter
+        (where the events are already clustered). It
+        will model the appliances by grouping some clusters of events.
+        The current algorithm allows only to model two-states-appliances.
+        The clusters are defined in Clusters class. The modeling construct
+        a pd.dataFrame where the columns are:
+        ['phase', 'appliance', 'transition'].
+        Each row is a cluster. Therefore for each cluster an appliance number
+        will be defined. 'transition' informed if it is an 'on' or a 'off'.
+        This method can use diffent modeling functions.
+        These functions are implemented in the submodule 'modeling'.
+        The function used is choosed in the __init__ of ApplianceModels.
+
+        Parameters
+        ----------
+        meter: NILM.Meter
+            Meter where the appliance models are already construct.
+        """
+
         #  Check that the clustering on meter was done
         clusters = meter.clusters
 
@@ -94,7 +169,3 @@ class ApplianceModels(pd.DataFrame):
 if __name__ == '__main__':
     am = ApplianceModels('simple')
     am.modeling(meter)
-
-
-
-

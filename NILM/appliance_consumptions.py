@@ -11,9 +11,11 @@ import tracking
 
 class ApplianceConsumptions(pd.DataFrame):
     """
-    This class is a pandas.DataFrame. The main method is the tracking
-    of appliances. The tracking of appliances method take as input a
-    meter (where the appliance models are already constructed). It
+    This class inherits from a pandas.DataFrame.
+
+    The main method is the tracking of appliances. The tracking
+    of appliances method take as input a meter
+    (where the appliance models are already constructed). It
     will track the behaviour appliances defined in ApplianceModels
     class. The tracking construct a pd.dataFrame where the columns
     are the appliance detected and the rows consumption tracked for each
