@@ -5,6 +5,58 @@ import matplotlib.pyplot as plt
 
 
 class Clusters(pd.DataFrame):
+    """
+    This class inherits from pandas.DataFrame. The
+    DataFrame is construct by the method 'clustering'.
+
+    Clustering method uses unsupervised learning to clusters
+    events. The result is a DataFrame. The index is the
+    ID of the cluster. The attributes of each cluster are
+    the phase, the average powers, the number of events.
+    The method used to cluster is choosed in the __init__ of Clusters.
+    It needs to be one of the functions implemented in submodule
+    clustering.
+
+    Parameters
+    ----------
+    clustering_type: string
+        Name of a clustering function. This function will be used to cluster
+        the events. Needs to be one of the keys of the dictionnary
+        'clustering_types'.
+
+    clustering_parameters: dict (optional)
+        Arguments to be passed as argument of the function which will be used
+        to cluster the events. Arguments not informed will take the default
+        value defined in the dictionnary 'clustering_types'.
+
+    Attributes
+    ----------
+    clustering_types: dict, (class variable)
+        Dictionnary wich lists all the functions to cluster
+        events which are implementend in the submodule 'clustering'.
+            Keys: str,
+                Name of the clustering function implemented.
+            Values: dict,
+                'model': clustering function from 'clustering' submodule.
+                'parameters': dictionary of default parameters of the
+                clustering function.
+        NOTE: When a new clustering function is implemented in 'clustering'
+        submodule, the function and default parameters need to be entered into
+        this dict.
+
+    clustering_type: str
+        Name of the clustering function used to cluster events.
+        Needs to belong to be one key of the dictionnary 'clustering_types'.
+
+    clustering_model: function
+        Function which will be use to cluster events. This function is
+        implemented in the submodule 'clustering'.
+
+    clustering_parameters: dict
+        Arguments passed to the clustering_model function. Its the dict
+        'clustering_parameters' passed into the '__init__' function completed
+        by default parameters (if not informed by clustering_parameters)
+    """
 
     clustering_types = {
         "DBSCAN": {
@@ -33,6 +85,22 @@ class Clusters(pd.DataFrame):
         self.clustering_parameters = parameters
 
     def clustering(self, meter, features=None):
+        """
+        Clustering method uses unsupervised learning to clusters
+        events. The result is a DataFrame. The index is the
+        ID of the cluster. The attributes of each cluster are
+        the phase, the average powers, the number of events.
+        The method used to cluster is choosed in the '__init__' of Clusters
+        by the parameter 'clustering_type'.
+        It needs to be one of the functions implemented in submodule
+        'clustering'.
+
+        Parameters
+        ----------
+        meter: NILM.Meter
+            Meter where the events are already detected.
+        """
+
         phases = meter.phases
         clustering_model = self.clustering_model
         parameters = self.clustering_parameters

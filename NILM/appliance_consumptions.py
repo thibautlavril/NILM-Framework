@@ -98,7 +98,7 @@ class ApplianceConsumptions(pd.DataFrame):
         Parameters
         ----------
         meter: NILM.Meter
-            Meter where the appliance models are already construct.
+            Meter where the appliance models are already built.
         """
 
         tracking_model = self.tracking_model

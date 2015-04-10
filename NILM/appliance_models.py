@@ -36,6 +36,7 @@ class ApplianceModels(pd.DataFrame):
         Name of the function used to create two-state
         appliance models. Needs to be one of the
         keys of the dictionnary association_two_states_types.
+
     association_two_sates_parameters: dict (optional)
         dict of parameters/value to be passed as argument of the
         function model_2states. Arguments not informed will
@@ -56,12 +57,15 @@ class ApplianceModels(pd.DataFrame):
         value of theses parameters. NOTE: When a new tracking function is
         implemented in 'modeling' submodule, the function and default
         parameters need to be entered into this dict.
+
     tracking_type: string
         Name of the tracking model used. Needs to belong to be one
         key of the dictionnary tracking_types.
+
     model_2states: function
         Function used to do the association_two_states. Function are
         implemented in the submodule 'modleing'.
+
     parameters_2states: dict
         dict of parameters/value to be passed as argument of the
         function model_2states.
