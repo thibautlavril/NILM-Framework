@@ -16,10 +16,10 @@ Hart in [1].
 
 The goal of NILM is to breakdown a total consumption of an household
 into applliances consumptions (fridge, aircon, etc). To do so machine learning
-techniques (maily unsupervised learning) are used.
+techniques (mainly unsupervised learning) are used.
 
-Algorithm Overall
-=================
+Algorithm Overview
+==================
 
 The algorithm is composed of different steps:
 
