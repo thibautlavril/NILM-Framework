@@ -11,7 +11,7 @@ from appliance_consumptions import ApplianceConsumptions
 
 
 class Store(object):
-    """ Adress where the data of a meter is stored.
+    """ Reference where the data of a meter is stored.
 
     Parameters
     ----------
@@ -45,11 +45,31 @@ class Store(object):
 
 
 class Meter(object):
-    """Main object for disaggregation.
+    """Main object of this disaggregation algorithm.
 
     Models a real meter. The data is in a HDFS store and can be loaded
-    into the Measurements attribute. All the actions to disaggregate a meter
-    are performed on the Meter object.
+    into the Measurements attribute. The data is referenced in the
+    NILM.meter.Store object All the actions to disaggregate a meter
+    are performed on the Meter object. Meter can be created from
+    a NILM.User object, loaded from a meter HDFS file or created from
+    a pandas.DataFrame with measurements data well designed.
+
+
+    Parameters
+    ----------
+    metadata: dict, optional
+        Contains additionnal informations on the meter.
+        Example: timezone, start of the measurements etc...
+
+    phases: list of str, optional
+        List of phases measured by meter.
+
+    power_types: list of str, optional
+        List of power types measured by meter.
+        Example: ['P', 'Q'], ['apparent', 'reactive']
+
+    store: NILM.Store object, optional
+        Where the data of the meter is stored.
 
     Attributes
     ----------
@@ -98,7 +118,7 @@ class Meter(object):
 
     @staticmethod
     def from_user(user, meter_ID):
-        """Create a Meter from a User object.
+        """Returns a Meter created from a User object.
 
         Parameters
         ----------
@@ -123,7 +143,7 @@ class Meter(object):
 
     @staticmethod
     def from_meter_hdf(hdf_filename):
-        """Create a Meter from a meter HDFS file.
+        """Returns a Meter created from a meter HDFS file.
 
         For more informations on meter HDFS file,
         see NILM.converter.dataframe_to_meter function.
@@ -173,7 +193,12 @@ class Meter(object):
         return str(self.ID)
 
     def load_measurements(self, sampling_period):
-        """ Create a measurements attribute.
+        """ Create a NILM.Measurements object as Meter attribute.
+
+        Parameters
+        ----------
+        sampling_period: int of float
+            Elapse time between two measurements in second.
         """
         measurements = Measurements(sampling_period)
         measurements.load_data(self)
@@ -188,6 +213,21 @@ class Meter(object):
             return AttributeError('Meter: load measurements before!')
 
     def detect_events(self, detection_type, **detection_parameters):
+        """Create a NILM.Events object as Meter attribute.
+
+        Parameters
+        ----------
+        detection_type: string
+            Name of a detection function. This function will be used to detect
+            events. Needs to be one of the keys of the dictionnary
+            'detection_types' of NILM.Events object.
+
+        detection_parameters: dict (optional)
+            Arguments to be passed as argument of the function which will be
+            used to detect the events. Arguments not informed will take the
+            default value defined in the dictionnary 'detection_types'
+            of NILM.Events object.
+        """
         events = Events(detection_type, **detection_parameters)
         events.detection(self)
         self.events_ = events
@@ -202,6 +242,21 @@ class Meter(object):
 
     def cluster_events(self, clustering_type, features=None,
                        **clustering_parameters):
+        """Create a NILM.Clusters object as Meter attribute.
+
+        Parameters
+        ----------
+        clustering_type: string
+            Name of a clustering function. This function will be used to
+            cluster the events. Needs to be one of the keys of the dictionnary
+            'clustering_types' of NILM.Clusters object.
+
+        clustering_parameters: dict (optional)
+            Arguments to be passed as argument of the function which will be
+            used to cluster the events. Arguments not informed will take the
+            default value defined in the dictionnary 'clustering_types' of
+            NILM.Clusters object.
+            """
         clusters = Clusters(clustering_type, **clustering_parameters)
         clusters.clustering(self, features)
         self.clusters_ = clusters
@@ -216,6 +271,22 @@ class Meter(object):
 
     def model_appliances(self, association_two_states_type,
                          **association_two_sates_parameters):
+        """Create a NILM.ApplianceModels object as Meter attribute.
+
+        Parameters
+        ----------
+        association_two_states_type: string
+            Name of a function which model two-state appliances with available
+            clusters. This function will be used to built tha appliance models.
+            Needs to be one of the keys of the dictionnary
+            'association_two_states_types' of NILM.ApplianceModels object.
+
+        association_two_states_parameters: dict (optional)
+            Parameters to be passed as arguments of the function which will be
+            used to model the two-states appliances. Arguments not informed
+            will take the default value defined in the dictionnary
+            'association_two_states_types' of NILM.Clusters object.
+        """
         appliance_models = ApplianceModels(association_two_states_type,
                                            **association_two_sates_parameters)
         appliance_models.modeling(self)
@@ -230,6 +301,22 @@ class Meter(object):
             return AttributeError('Meter: model appliances before!')
 
     def track_consumptions(self, tracking_type, **tracking_parameters):
+        """Create a NILM.ApplianceConsumptions object as Meter attribute.
+
+        Parameters
+        ----------
+        tracking_type:: string
+            Name of a function which track appliances consumptions of available
+            appliances. This function will be used to compute the appliance
+            mconsumptions. Needs to be one of the keys of the dictionnary
+            'tracking_types' of NILM.ApplianceConsumptions object.
+
+        tracking_parameters: dict (optional)
+            Parameters to be passed as arguments of the function which will be
+            used to track the appliances consumptions. Arguments not informed
+            will take the default value defined in the dictionnary
+            'tracking_types' of NILM.Consumptions object.
+        """
         appliance_consumptions = ApplianceConsumptions(tracking_type,
                                                        **tracking_parameters)
         appliance_consumptions.tracking(self)

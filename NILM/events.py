@@ -6,7 +6,7 @@ class Events(pd.DataFrame):
 
     """
     This class inherits from pandas.DataFrame. The
-    DataFrame is construct by the method 'detection'.
+    DataFrame is constructed by the method 'detection'.
 
     Detection method uses event detection methods to detect
     events in the measurments. The result is a DataFrame:

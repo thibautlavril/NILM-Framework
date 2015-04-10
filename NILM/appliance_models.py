@@ -33,22 +33,23 @@ class ApplianceModels(pd.DataFrame):
     Parameters
     ----------
     association_two_states_type: string
-        Name of the function used to create two-state
-        appliance models. Needs to be one of the
-        keys of the dictionnary association_two_states_types.
+            Name of a function which model two-state appliances with available
+            clusters. This function will be used to built tha appliance models.
+            Needs to be one of the keys of the dictionnary
+            'association_two_states_types' of NILM.ApplianceModels object.
 
-    association_two_sates_parameters: dict (optional)
-        dict of parameters/value to be passed as argument of the
-        function model_2states. Arguments not informed will
-        take the default value defined in the dictionnary
-        association_two_states_types.
+    association_two_states_parameters: dict (optional)
+        Parameters to be passed as arguments of the function which will be
+        used to model the two-states appliances. Arguments not informed
+        will take the default value defined in the dictionnary
+        'association_two_states_types' of NILM.Clusters object.
 
     Attributes
     ----------
     association_two_states_types: dict, (class variable)
         Dictionnary wich lists all the methods to create two-states appliances
         implemented. The keys are the name of the methods to create two-states
-        appliances implemented.. The values are dictionnary with two keys:
+        appliances implemented. The values are dictionnary with two keys:
         'model' and 'parameters'. The value associated to 'model' is a
         function for which associate clusters to create two-states appliances.
         This function is implemented into the submodule 'modeling

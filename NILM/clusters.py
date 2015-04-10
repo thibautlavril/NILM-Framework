@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 class Clusters(pd.DataFrame):
     """
     This class inherits from pandas.DataFrame. The
-    DataFrame is construct by the method 'clustering'.
+    DataFrame is constructed by the method 'clustering'.
 
     Clustering method uses unsupervised learning to clusters
     events. The result is a DataFrame. The index is the

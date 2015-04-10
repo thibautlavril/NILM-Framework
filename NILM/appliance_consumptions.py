@@ -28,13 +28,17 @@ class ApplianceConsumptions(pd.DataFrame):
 
     Parameters
     ----------
-    tracking_type: string
-        Name of the tracking model used. Needs to be one of the
-        keys of the dictionnary tracking_types.
+    tracking_type:: string
+        Name of a function which track appliances consumptions of available
+        appliances. This function will be used to compute the appliance
+        mconsumptions. Needs to be one of the keys of the dictionnary
+        'tracking_types' of NILM.ApplianceConsumptions object.
+
     tracking_parameters: dict (optional)
-        dict of parameters/value to be passed as argument of the
-        tracking function. If not, the default values defined
-        in the class attribute tracking_types are used.
+        Parameters to be passed as arguments of the function which will be
+        used to track the appliances consumptions. Arguments not informed
+        will take the default value defined in the dictionnary
+        'tracking_types' of NILM.Consumptions object.
 
     Attributes
     ----------
@@ -48,9 +52,11 @@ class ApplianceConsumptions(pd.DataFrame):
         the function in 'model'. NOTE: When a new tracking function is
         implemented in 'tracking' submodule, the function and default
         parameters need to be entered into this dict.
+
     tracking_type: string
         Name of the tracking model used. Needs to belong to be one
         key of the dictionnary tracking_types.
+
     tracking_model: function
         Function used to do the tracking. Function are in the submodule
         'tracking'.
