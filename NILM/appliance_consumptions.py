@@ -60,6 +60,10 @@ class ApplianceConsumptions(pd.DataFrame):
     tracking_model: function
         Function used to do the tracking. Function are in the submodule
         'tracking'.
+
+    References
+    ----------
+    Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
     """
 
     tracking_types = {

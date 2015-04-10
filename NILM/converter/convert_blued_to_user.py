@@ -39,6 +39,7 @@ def blued_to_user(input_path, hdf_path):
     ----------
     input_path: string
         The path where the "location001_dataset00x" folders are stored
+
     hdf_path: string
         The path of the folder where to store the HDFS files.
     """

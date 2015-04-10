@@ -11,6 +11,27 @@ import os
 
 
 def dataframe_to_meter(df, hdf_filename):
+    """Converts a pandas.Dataframe into a meter HDFS file.
+
+    The DataFrame needs to have a well determined structure. See Parameters
+    The meter is store into a HDFS file so-called meter HDFS file which can
+    be used to create a NILM.Meter object.
+
+    Parameters
+    ----------
+    df: pandas.DataFrame, (n_timestamps, n_power*n_phases)
+        index: pandas.DataTimeIndex,
+            All timestamps of measurements, timezone aware.
+        columns: pandas.MultiIndex
+            The columns needs to have two levels.
+                level 0: Phases measured by the meters
+                level 1: Powers measured by the meters
+        values: float
+            Value for the power and phase considered at the timestamp.
+
+    hdf_filename: str
+        path+name of the file to store the meter HDFS file.
+    """
 
     if os.path.exists(hdf_filename):
         os.remove(hdf_filename)
@@ -67,4 +88,3 @@ def dataframe_to_meter(df, hdf_filename):
 if __name__ == '__main__':
     hdf_filename = 'meter_blued.h5'
     dataframe_to_meter(df, hdf_filename)
-

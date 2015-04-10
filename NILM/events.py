@@ -106,6 +106,10 @@ class Events(pd.DataFrame):
         ----------
         meter: NILM.Meter
             Meter where the measurements are already loaded.
+
+        References
+        ----------
+        Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
         """
 
         phases = meter.phases

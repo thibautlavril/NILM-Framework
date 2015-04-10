@@ -8,7 +8,7 @@ def steady_states(dataframe, state_threshold=15,
                   edge_threshold=70):
     """
     Finds steady states given a datafram of power
-    
+
     Taken from nilmtk. Quote while using
 
 
@@ -16,10 +16,13 @@ def steady_states(dataframe, state_threshold=15,
     ----------
 
     dataframe: pd.DataFrame with DateTimeIndex
+
     min_n_samples(int): number of samples to consider constituting a
              steady state.
+
     state_threshold: maximum difference between highest and lowest
         value in steady state.
+
     edge_threshold: the level used to define significant
         appliances, transitions below this level will be ignored.
         See Hart 1985. p27.
@@ -27,7 +30,14 @@ def steady_states(dataframe, state_threshold=15,
 
     Returns
     -------
+    transitions: pandas.Dataframe
+        DataFrame containing the events
+                index: DateTimeIndex, timestamps
+                attributes: power types availabes
 
+    References
+    ----------
+    Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
     """
 
 
@@ -155,7 +165,7 @@ def steady_states(dataframe, state_threshold=15,
 
     if len(index_transitions)==0:
         # No events
-        return pd.DataFrame(), pd.DataFrame()
+        return pd.DataFrame()
     else:
         transitions = pd.DataFrame(data=transitions, index=index_transitions,
                                    columns=columns)
