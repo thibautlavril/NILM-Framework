@@ -70,6 +70,10 @@ class ApplianceModels(pd.DataFrame):
     parameters_2states: dict
         dict of parameters/value to be passed as argument of the
         function model_2states.
+
+    References
+    ----------
+    Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
     """
 
     association_two_states_types = {

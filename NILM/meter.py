@@ -106,6 +106,10 @@ class Meter(object):
     appliance_consumptions: NILM.ApplianceConsumptions object
         Consumptions of the disaggregated appliances. Requires to track the
         consumptions of the meter before.
+
+    References
+    ----------
+    Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
     """
 
     def __init__(self, metadata=None, phases=None, power_types=None,
