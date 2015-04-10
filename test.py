@@ -7,9 +7,9 @@ hdf_filename = '/Volumes/Stockage/DATA/DATA_BLUED/CONVERTED/user_blued.h5'
 user = nilm.User(hdf_filename)
 meter = user.meters[0]
 
-meter.load_measurements(sampling_period=10)
+meter.load_measurements(sampling_period=1)
 meter.detect_events(detection_type='steady_states')
-meter.cluster_events('DBSCAN', eps=35)
+meter.cluster_events('DBSCAN')
 meter.model_appliances('simple')
 meter.track_consumptions('simple')
 

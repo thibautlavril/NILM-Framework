@@ -10,26 +10,6 @@ import numpy as np
 import modeling
 
 
-
-
-class BuildApplianceModels(object):
-
-    def __init__(self, name, **parameters):
-        # Check name of method for association is valid
-        assert name in associationsDict
-        self.name = name
-
-        # define model and default parameters from the dict
-        Dict = associationsDict[name]
-
-        self.model = Dict['model']
-
-        self.parameters = Dict['parameters']
-        # Add the parameters from **parameters in the dict
-        for k, v in parameters.iteritems():
-            self.parameters[k] = v
-
-
 class ApplianceModels(pd.DataFrame):
 
     association_two_states_types = {
@@ -39,7 +19,7 @@ class ApplianceModels(pd.DataFrame):
                 'distance_threshold': 35,
                 'metric': modeling.euclidian_cluster_metric}},
         "dbscan": {
-            "model": modeling.affinity_propagation_association_two_states,
+            "model": modeling.dbscan_association_two_states,
             "parameters": {
                 'eps': 35,
                 'min_samples': 1,

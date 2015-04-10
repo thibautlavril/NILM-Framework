@@ -10,6 +10,49 @@ import tracking
 
 
 class ApplianceConsumptions(pd.DataFrame):
+    """
+    This class is a pandas.DataFrame. The main method is the tracking
+    of appliances. The tracking of appliances method take as input a
+    meter (where the appliance models are already constructed). It
+    will track the behaviour appliances defined in ApplianceModels
+    class. The tracking construct a pd.dataFrame where the columns
+    are the appliance detected and the rows consumption tracked for each
+    timestamps. This method can diffent tracking functions. These functions
+    are implemented in the submodule 'tracking'. The function used is choosed
+    in the __init__ of ApplianceConsumptions.
+
+    The pandas.DataFrame constructed allows therefore to know all the
+    consumptions of all appliances detected.
+
+    Parameters
+    ----------
+    tracking_type: string
+        Name of the tracking model used. Needs to be one of the
+        keys of the dictionnary tracking_types.
+    tracking_parameters: dict (optional)
+        dict of parameters/value to be passed as argument of the
+        tracking function. If not, the default values defined
+        in the class attribute tracking_types are used.
+
+    Attributes
+    ----------
+    tracking_types: dict, (class variable)
+        Dictionnary with all the tracking methods implemented. The keys are
+        the name of the tracking methods implemented. The values are
+        dictionnary with two keys: 'model' and 'parameters'. The value
+        associated to 'model' is a function for tracking. This function
+        is implemented into the submodel 'tracking'. The values associated
+        to 'parameters' is a dictionnary name:value of default parameters of
+        the function in 'model'. NOTE: When a new tracking function is
+        implemented in 'tracking' submodule, the function and default
+        parameters need to be entered into this dict.
+    tracking_type: string
+        Name of the tracking model used. Needs to belong to be one
+        key of the dictionnary tracking_types.
+    tracking_model: function
+        Function used to do the tracking. Function are in the submodule
+        'tracking'.
+    """
 
     tracking_types = {
         "simple": {
@@ -37,6 +80,24 @@ class ApplianceConsumptions(pd.DataFrame):
         self.tracking_parameters = parameters
 
     def tracking(self, meter):
+        """
+        The tracking of appliances method take as input a
+        meter (where the appliance models are already constructed). It
+        will track the behaviour appliances defined in ApplianceModels
+        class. The tracking construct a pd.dataFrame where the columns
+        are the appliance detected and the rows consumption tracked for each
+        timestamps. This method can diffent tracking functions. These functions
+        are implemented in the submodule 'tracking'. The function used is
+        choosen in the __init__ of ApplianceConsumptions.
+
+        The pandas.DataFrame constructed allows therefore to know all the
+        consumptions of all appliances detected.
+
+        Parameters
+        ----------
+        meter: NILM.Meter
+            Meter where the appliance models are already construct.
+        """
 
         tracking_model = self.tracking_model
         tracking_parameters = self.tracking_parameters
