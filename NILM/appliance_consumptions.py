@@ -66,13 +66,8 @@ class ApplianceConsumptions(pd.DataFrame):
     Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
     """
 
-    tracking_types = {
-        "simple": {
-            "model": tracking.simple_tracking,
-            "parameters": {
-                }
-            }
-    }
+    tracking_types = tracking.__all__
+
 
     def __init__(self, tracking_type, **tracking_parameters):
         super(ApplianceConsumptions, self).__init__()

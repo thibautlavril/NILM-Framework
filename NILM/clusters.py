@@ -58,15 +58,7 @@ class Clusters(pd.DataFrame):
         by default parameters (if not informed by clustering_parameters)
     """
 
-    clustering_types = {
-        "DBSCAN": {
-            "model": clustering.DBSCAN,
-            "parameters": {
-                "eps": 35,
-                "min_samples": 1}},
-            "MeanShift": {
-                "model": clustering.MeanShift,
-                "parameters": {}}}
+    clustering_types = clustering.__all__
 
     def __init__(self, clustering_type, **clustering_parameters):
         super(Clusters, self).__init__()

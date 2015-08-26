@@ -76,19 +76,8 @@ class ApplianceModels(pd.DataFrame):
     Hart, G. W. "Prototype nonintrusive appliance load monitor." (1985).
     """
 
-    association_two_states_types = {
-        "simple": {
-            "model": modeling.simple_association_two_states,
-            "parameters": {
-                'distance_threshold': 35,
-                'metric': modeling.euclidian_cluster_metric}},
-        "dbscan": {
-            "model": modeling.dbscan_association_two_states,
-            "parameters": {
-                'eps': 35,
-                'min_samples': 1,
-                'metric': modeling.euclidian_cluster_metric}}
-    }
+    association_two_states_types = modeling.__all__
+
 
     def __init__(self, association_two_states_type,
                  **association_two_sates_parameters):

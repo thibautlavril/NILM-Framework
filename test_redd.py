@@ -16,19 +16,32 @@ df.index = pd.to_datetime(df.index, unit='s', utc=True)
 hdf_filename = '/Volumes/Stockage/DATA/Meters/meter_redd_1.h5'
 meter = nilm.Meter.from_dataframe(df, hdf_filename)
 
-meter.load_measurements(sampling_period=100)
-meter.detect_events(detection_type='steady_states')
-meter.cluster_events('DBSCAN', eps=10)
+meter.load_measurements(sampling_period=10)
+meter.detect_events(detection_type='simple_edge')
+#meter.detect_events(detection_type='steady_states', edge_threshold=30, state_threshold=10)
+measures = meter.measurements
+events = meter.events
+plt.plot(measures.index, measures.values)
+plt.plot(events.timestamps.values, events.P.values, 'ro')
+plt.show()
+meter.cluster_events('DBSCAN', eps=30)
 meter.model_appliances('simple', distance_threshold = 100)
 meter.track_consumptions('simple')
+
+print len(meter.events)
 
 """
 # Plot appliances
 for phase, appliance in meter.appliance_consumptions.columns:
     print appliance
     #meter.measurements[phase][meter.power_types[0]].plot()
-    meter.appliance_consumptions[phase][appliance].plot(color='r')
+    #meter.appliance_consumptions[phase][appliance].plot(color='r')
+    df0 = meter.measurements[phase][meter.power_types[0]]
+    df = meter.appliance_consumptions[phase][appliance]
+    plt.plot(df0.index, df0.values)
+    plt.plot(df.index, df.values, 'r')
     plt.show()
+
 
 phases = meter.phases
 for phase in phases:

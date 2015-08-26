@@ -60,16 +60,7 @@ class Events(pd.DataFrame):
         by default parameters (if not informed by detection_parameters)
     """
 
-    detection_types = {
-        "simple_edge": {
-            "model": detection.simple_edge,
-            "parameters": {
-                "edge_threshold": 70}},
-        "steady_states": {
-            "model": detection.steady_states,
-            "parameters": {
-                "edge_threshold": 70,
-                "state_threshold": 15}}}
+    detection_types = detection.__all__
 
     def __init__(self, detection_type, **detection_parameters):
         super(Events, self).__init__()
